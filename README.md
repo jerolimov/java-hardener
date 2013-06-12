@@ -37,10 +37,18 @@ and will be implemented as a bytecode-to-bytecode post-processor and maybe also 
 
 ## Developer introduction
 
-Dependencies and the eclipse configuration files are not part of the
-git repository. To download them use maven 2+ (tested with maven 3):
+Dependencies and the IDE configuration files are not part of the git repository.
+
+Supported maven 2+ (tested with maven 3) commands:
+
+	mvn compile # download the dependencies and compile the sources
+	mvn package # compiles, test and package the java-hardener sources
+
+Use your IDE maven-plugins to import the projects or configure your project
+with one of these maven 2+ (tested with maven 3) commands:
 
 	mvn eclipse:clean eclipse:eclipse
+	mvn idea:clean idea:eclipse
 
 Required dependencies:
 
@@ -54,39 +62,40 @@ TODO: Translate this
 
 * Irgendwo anmerken das dies nicht für den Produktiveinsatz gedacht ist. :-)
 * Analyse / Einarbeitung
+  * Bytecode
+    * `invoke_method`
+    * `invoke_interface`
+    * `invoke_dynamic`???
   * ASM
   * Eclipse Plugin das asm befehle anzeigt verwenden?
-
-* invoke_method
-* invoke_interface
-* invoke_dynamic??
-
 * Analyse der möglichen Problemfälle
-  * Funktionsaufrufe auf null
-  * Variablenaufrufe auf null
-  * Array length aufrufe auf null
-  * Autoboxing !? Sind im bytecode ja normale Aufrufe.. Trotzdem irgendwas beachten? (Siehe Optimierungsmöglichkeiten)
+  * Methodenaufrufe auf null-Objekte.
+  * Variablenaufrufe (setzen oder laden) auf null-Objekte.
+  * length-Anfragen auf null-Arrays.
   * Was ist mit verketteten Befehle?
+  * Autoboxing sind im bytecode ja normale Aufrufe.. Trotzdem irgendwas beachten? Kann man das ggf. Erkennen (vgl. Optimierung `Integer.valueOf()`)?
 * Optimierungsmöglichkeit:
   * Was ist wenn dies Eingebunden in Schleifen ist?
   * Was ist wenn sie mehrmals hintereinander aufgerufen wird?
   * Wenn Variable zuletzt gesetzt wurde ist mit new, kann sie nicht null sein.
   * Wenn Variable zuletzt gesetzt wurde mit einem "String" oder einem primitiven Typen, kann sie nicht null sein.
-  * Nicht für "System.out" etc.
-  * Nicht wenn Ergebnis von Integer.valueOf(), String.forInteger() oder ähnliche
-  * Nicht wenn Feld final ist?
+  * Nicht für `System.[in,out,err].*`-Aufrufe.
+  * Nicht wenn Ergebnis von `Integer.valueOf()`, `Integer.toString()`, etc.
+  * Nicht wenn Feld `final` ist?
 * Statistiken ausgeben
-* Anaylse Umsetzungsmöglichkeiten (aus variable.doAnything() wird z.b.)
-  * if (variable != null) variable.doAnything()
-  * variable != null && variable.doAnything()
-  * Springmarke mit label / goto?
+* Anaylse Umsetzungsmöglichkeiten (aus `variable.doAnything()` wird z.b.)
+  * `if (variable != null) variable.doAnything()`
+  * `variable != null && variable.doAnything()`
+  * Springmarke mit `label` / `goto`?
 * Weitere analyse möglicher Probleme:
   * Stack size anpassen?
   * Labels anpassem
 * Toolchain
   * Shell-Script das Class-Dateien bearbeitet.
   * Classloader schreiben?
-  * Shell-Script das Classloader setzt und Programm startet (`javahardener` oder `jarh`)?
+  * Ein kleines Shell-Script welches den Classloader setzt (für bestimmte Klassen?
+    * zB `javahardener -Dharden=methodcalls -cp … Main`?
+    * oder `jarh -Dharden=methodcalls beispiel.jar`?
 
 
 ## Links
