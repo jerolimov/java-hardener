@@ -3,3 +3,9 @@
 /out
 /target
 
+# Ignore latex working files
+*.pid
+*.aux
+*.lyx
+/doc/Dokumentation.*
+
