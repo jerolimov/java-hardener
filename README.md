@@ -2,19 +2,18 @@
 Fachhochschule Köln Campus Gummersbach<br/>
 Fakultät für Informatik und Ingenieurwissenschaften
 
-This is a **WORK IN PROCESS project (will be finished end of july)**
-developed for the [Compiler and Interpreter](http://www.gm.fh-koeln.de/ehses/compiler/)
-elective subject provided by [Prof.&nbsp;Dr.&nbsp;Ehses](http://www.gm.fh-koeln.de/ehses/).
-
 Christoph Jerolimov, 11084742<br/>2013 Spring Semester
+
+This is a project was developed for the
+[Compiler and Interpreter](http://www.gm.fh-koeln.de/ehses/compiler/)
+elective subject provided by
+[Prof.&nbsp;Dr.&nbsp;Ehses](http://www.gm.fh-koeln.de/ehses/).
 
 # Java-hardener
 
 Java-hardener makes java-bytecode (a little bit) more fault tolerant against `NullPointerExceptions`.
 It's inspired by the [Objective-C](http://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/)
 language which ignores signals (method calls) to nil-Objects.
-
-It's a univerity project. More details about this later. :-)
 
 It shall use the [ASM](http://asm.ow2.org/) bytecode manipulation and analysis framework
 and will be implemented as a bytecode-to-bytecode post-processor and maybe also as java `ClassLoader`.
@@ -29,7 +28,6 @@ and will be implemented as a bytecode-to-bytecode post-processor and maybe also 
 	if (!nullList.isEmpty()) {
 		// Will run this code also if the nullList is null.
 	}
-
 
 ## User introduction
 
@@ -98,8 +96,41 @@ TODO: Translate this
     * zB `javahardener -Dharden=methodcalls -cp … Main`?
     * oder `jarh -Dharden=methodcalls beispiel.jar`?
 
+### Academic-project disclaimer (or „this is fun only“)
 
-## Links
+Since this is a academic project it's focusud on the possibility of
+byte-code manipulation instead of creating a commercial-prooven software.
+If you start programming and have to many NullPointerExceptions you may be
+intressting in this. But the best way to fix such issues is understanding
+the general problem and improve your code. :-)
+
+But if you think this may interessting for your commercial project feel free
+to write me a mail.
+
+### Copyright
+
+	The MIT License (MIT)
+	
+	Copyright (c) 2013 Christoph Jerolimov
+	
+	Permission is hereby granted, free of charge, to any person obtaining a copy of
+	this software and associated documentation files (the "Software"), to deal in
+	the Software without restriction, including without limitation the rights to
+	use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+	the Software, and to permit persons to whom the Software is furnished to do so,
+	subject to the following conditions:
+	
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+	
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+	FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+	COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+	IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+	CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+### Links
 
 * [Objective-C programming guide](http://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/)
 * [ASM](http://asm.ow2.org/)
