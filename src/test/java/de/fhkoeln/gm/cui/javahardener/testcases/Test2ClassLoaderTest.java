@@ -23,11 +23,13 @@
 
 package de.fhkoeln.gm.cui.javahardener.testcases;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -66,13 +68,13 @@ public class Test2ClassLoaderTest {
 		Assert.assertEquals(true, test2.isFirstEntryTrue(map, "key"));
 	}
 
-	@Test
+	@Test(expected = NullPointerException.class)
 	public void testNoMapWithDefaultClassLoader() {
 		Test2 test2 = new Test2();
 		Assert.assertEquals(true, test2.isFirstEntryTrue(null, "key"));
 	}
 
-	@Test
+	@Test(expected = NoSuchElementException.class)
 	public void testNoEntriesWithDefaultClassLoader() {
 		Map<String, Deque<Boolean>> map = new LinkedHashMap<>();
 		map.put("key", new LinkedList<Boolean>());
@@ -95,10 +97,10 @@ public class Test2ClassLoaderTest {
 	@Test
 	public void testNoMapWithJHClassLoader() throws Exception {
 		Object test2 = test2Class.newInstance();
-		Assert.assertEquals(true, test2IsFirstEntryTrueMethod.invoke(test2, null, "key"));
+		Assert.assertEquals(false, test2IsFirstEntryTrueMethod.invoke(test2, null, "key"));
 	}
 
-	@Test
+	@Test(expected = InvocationTargetException.class)
 	public void testNoEntriesWithJHClassLoader() throws Exception {
 		Map<String, Deque<Boolean>> map = new LinkedHashMap<>();
 		map.put("key", new LinkedList<Boolean>());

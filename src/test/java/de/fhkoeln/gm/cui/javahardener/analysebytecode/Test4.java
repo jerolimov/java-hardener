@@ -23,13 +23,13 @@
 
 package de.fhkoeln.gm.cui.javahardener.analysebytecode;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-public class Test2 {
+public class Test4 {
 	public static void main(String[] args) {
-		Map<String, String> map = new LinkedHashMap<>();
-		String entry = map.get("key");
-		System.out.println(entry != null ? entry.toString() : null);
+		Test4 test4 = new Test4();
+		test4.doSomething("a", "b", "c", "d", "e", "f");
+	}
+	
+	public boolean doSomething(String a, String b, String c, String d, String e, String f) {
+		return true;
 	}
 }

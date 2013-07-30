@@ -26,6 +26,7 @@ package de.fhkoeln.gm.cui.javahardener;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.util.Printer;
 
 public class CheckNullMethodVisitor extends MethodVisitor {
 	public CheckNullMethodVisitor(MethodVisitor visitor) {
@@ -38,8 +39,6 @@ public class CheckNullMethodVisitor extends MethodVisitor {
 		
 		if (opcode == Opcodes.INVOKEINTERFACE || opcode == Opcodes.INVOKEVIRTUAL || opcode == Opcodes.INVOKEDYNAMIC) {
 			
-			//System.out.println(Printer.OPCODES[opcode] + "\t" + owner + "." + name + " " + desc);
-			
 			if ((owner + "." + name).equals("java/lang/String.length")) {
 				
 				// Instead of the original invoke call:
@@ -49,7 +48,7 @@ public class CheckNullMethodVisitor extends MethodVisitor {
 				Label behind = new Label();
 				
 				// We surround the original call with an IFNULL check:
-				super.visitInsn(Opcodes.DUP); // Duplicate stack pointer
+				super.visitInsn(Opcodes.DUP); // Duplicate stack pointer of the current object
 				super.visitJumpInsn(Opcodes.IFNULL, fallback); // Skip method call if reference is null
 				super.visitMethodInsn(opcode, owner, name, desc); // Original method call
 				super.visitJumpInsn(Opcodes.GOTO, behind); // Jump over the reference is null path
@@ -61,7 +60,73 @@ public class CheckNullMethodVisitor extends MethodVisitor {
 				
 				super.visitLabel(behind); // Label to jump of the reference is null path
 				
+			} else if ((owner + "." + name).equals("java/util/Map.get")) {
+				
+				// Instead of the original invoke call:
+				//super.visitMethodInsn(opcode, owner, name, desc);
+				
+				Label fallback = new Label();
+				Label behind = new Label();
+				
+				// We surround the original call with an IFNULL check:
+				super.visitInsn(Opcodes.DUP2); // Duplicate stack pointer of the current object AND the argument
+				super.visitInsn(Opcodes.POP); // Remove the argument again
+				super.visitJumpInsn(Opcodes.IFNULL, fallback); // Skip method call if reference is null
+				super.visitMethodInsn(opcode, owner, name, desc); // Original method call
+				super.visitJumpInsn(Opcodes.GOTO, behind); // Jump over the reference is null path
+				
+				// But if not we need add a default value to the stack:
+				super.visitLabel(fallback); // Reference is null path
+				super.visitInsn(Opcodes.POP2); // Pop the dup value from stack AND the argument
+				super.visitInsn(Opcodes.ACONST_NULL); // Push NULL to the stack
+				
+				super.visitLabel(behind); // Label to jump of the reference is null path
+
+			} else if ((owner + "." + name).equals("java/util/Deque.getFirst")) {
+				
+				// Instead of the original invoke call:
+				//super.visitMethodInsn(opcode, owner, name, desc);
+				
+				Label fallback = new Label();
+				Label behind = new Label();
+				
+				// We surround the original call with an IFNULL check:
+				super.visitInsn(Opcodes.DUP); // Duplicate stack pointer of the current object
+				super.visitJumpInsn(Opcodes.IFNULL, fallback); // Skip method call if reference is null
+				super.visitMethodInsn(opcode, owner, name, desc); // Original method call
+				super.visitJumpInsn(Opcodes.GOTO, behind); // Jump over the reference is null path
+				
+				// But if not we need add a default value to the stack:
+				super.visitLabel(fallback); // Reference is null path
+				super.visitInsn(Opcodes.POP); // Pop the dup value from stack
+				super.visitInsn(Opcodes.ACONST_NULL); // Push NULL to the stack
+				
+				super.visitLabel(behind); // Label to jump of the reference is null path
+
+			} else if ((owner + "." + name).equals("java/lang/Boolean.booleanValue")) {
+				
+				// Instead of the original invoke call:
+				//super.visitMethodInsn(opcode, owner, name, desc);
+				
+				Label fallback = new Label();
+				Label behind = new Label();
+				
+				// We surround the original call with an IFNULL check:
+				super.visitInsn(Opcodes.DUP); // Duplicate stack pointer of the current object
+				super.visitJumpInsn(Opcodes.IFNULL, fallback); // Skip method call if reference is null
+				super.visitMethodInsn(opcode, owner, name, desc); // Original method call
+				super.visitJumpInsn(Opcodes.GOTO, behind); // Jump over the reference is null path
+				
+				// But if not we need add a default value to the stack:
+				super.visitLabel(fallback); // Reference is null path
+				super.visitInsn(Opcodes.POP); // Pop the dup value from stack
+				super.visitIntInsn(Opcodes.BIPUSH, 0); // Push false to the stack
+				
+				super.visitLabel(behind); // Label to jump of the reference is null path
+				
 			} else {
+				System.out.println(Printer.OPCODES[opcode] + "\tUnsupported method: " + owner + "." + name + " " + desc);
+				
 				super.visitMethodInsn(opcode, owner, name, desc);
 			}
 			

@@ -49,9 +49,9 @@ public class JHClassLoader extends ClassLoader {
 			ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 			
 			ClassVisitor classVisitor = classWriter;
-			//debug: classVisitor = new TraceClassVisitor(classVisitor, new PrintWriter(System.out)); // post
+			// debug: classVisitor = new TraceClassVisitor(classVisitor, new PrintWriter(System.out)); // post
 			classVisitor = new CheckNullClassVisitor(classVisitor);
-			//debug: classVisitor = new TraceClassVisitor(classVisitor, new PrintWriter(System.out)); // pre
+			// debug: classVisitor = new TraceClassVisitor(classVisitor, new PrintWriter(System.out)); // pre
 			classReader.accept(classVisitor, ClassReader.SKIP_DEBUG);
 			
 			byte[] b = classWriter.toByteArray();
