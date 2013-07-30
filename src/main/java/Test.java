@@ -3,9 +3,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.util.Textifier;
+import org.objectweb.asm.util.TraceClassVisitor;
 
 import de.fhkoeln.gm.cui.javahardener.defectdemos.DemoMethodCall;
 import de.fhkoeln.gm.cui.javahardener.out.ClassPrinter;
@@ -31,6 +34,11 @@ public class Test {
 		OutputStream os = new FileOutputStream(outFolder + classFilename);
 		os.write(classWriter.toByteArray());
 		os.close();
+		
+		is = c.getResourceAsStream(classFilename);
+		classReader = new ClassReader(is);
+        classReader.accept(new TraceClassVisitor(new PrintWriter(System.out)), 0);
+		
 		
 	}
 }

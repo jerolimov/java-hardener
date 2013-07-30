@@ -38,17 +38,18 @@ and will be implemented as a bytecode-to-bytecode post-processor and maybe also 
 ## Developer introduction
 
 Dependencies and the IDE configuration files are not part of the git repository.
+To download them use the maven plugin of your IDE or one of these commands:
+
+Use your IDE maven-plugins to import the projects or configure your project
+with one of these maven 2+ (tested with maven 3.1) commands:
+
+	mvn eclipse:clean eclipse:eclipse -DdownloadSources
+	mvn idea:clean idea:eclipse
 
 Supported maven 2+ (tested with maven 3) commands:
 
 	mvn compile # download the dependencies and compile the sources
 	mvn package # compiles, test and package the java-hardener sources
-
-Use your IDE maven-plugins to import the projects or configure your project
-with one of these maven 2+ (tested with maven 3) commands:
-
-	mvn eclipse:clean eclipse:eclipse
-	mvn idea:clean idea:eclipse
 
 Required dependencies:
 
@@ -103,5 +104,6 @@ TODO: Translate this
 * [Objective-C programming guide](http://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/)
 * [ASM](http://asm.ow2.org/)
 * [ASM 4.0 javadoc](http://asm.ow2.org/asm40/javadoc/user/overview-summary.html)
+* [ASM 4.0 Guide by Eric Bruneton](http://download.forge.objectweb.org/asm/asm4-guide.pdf) (pdf)
 * [ASM Eclipse Plugin](http://asm.ow2.org/eclipse/index.html)
   * doesn't work our of the box with juno :-(
