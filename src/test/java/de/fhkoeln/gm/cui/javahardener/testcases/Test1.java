@@ -21,13 +21,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.fhkoeln.gm.cui.javahardener.out;
+package de.fhkoeln.gm.cui.javahardener.testcases;
 
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.Opcodes;
+import java.util.Map;
 
-public class FieldPrinter extends FieldVisitor {
-	public FieldPrinter(FieldVisitor visitor) {
-		super(Opcodes.ASM4, visitor);
+public class Test1 {
+	public int getStringLength(Map<String, String> map, String key) {
+		return map.get(key).length();
 	}
 }

@@ -21,13 +21,23 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.fhkoeln.gm.cui.javahardener.out;
+package de.fhkoeln.gm.cui.javahardener.analysebytecode;
 
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.Opcodes;
+import org.junit.Test;
 
-public class FieldPrinter extends FieldVisitor {
-	public FieldPrinter(FieldVisitor visitor) {
-		super(Opcodes.ASM4, visitor);
+public class AssertBytecodeTests {
+	@Test(expected = NullPointerException.class)
+	public void test1() {
+		Test1.main(new String[0]);
+	}
+
+	@Test
+	public void test2() {
+		Test2.main(new String[0]);
+	}
+
+	@Test
+	public void test3() {
+		Test3.main(new String[0]);
 	}
 }

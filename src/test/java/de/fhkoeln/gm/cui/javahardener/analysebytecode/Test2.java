@@ -21,13 +21,15 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.fhkoeln.gm.cui.javahardener.out;
+package de.fhkoeln.gm.cui.javahardener.analysebytecode;
 
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.Opcodes;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-public class FieldPrinter extends FieldVisitor {
-	public FieldPrinter(FieldVisitor visitor) {
-		super(Opcodes.ASM4, visitor);
+public class Test2 {
+	public static void main(String[] args) {
+		Map<String, String> map = new LinkedHashMap<>();
+		String entry = map.get("key");
+		System.out.println(entry != null ? entry.length() : 0);
 	}
 }

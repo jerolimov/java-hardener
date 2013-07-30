@@ -21,13 +21,21 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.fhkoeln.gm.cui.javahardener.out;
+package de.fhkoeln.gm.cui.javahardener;
 
-import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-public class FieldPrinter extends FieldVisitor {
-	public FieldPrinter(FieldVisitor visitor) {
+public class CheckNullClassVisitor extends ClassVisitor {
+	public CheckNullClassVisitor(ClassVisitor visitor) {
 		super(Opcodes.ASM4, visitor);
+	}
+	
+	@Override
+	public MethodVisitor visitMethod(int access, String name, String desc,
+			String signature, String[] exceptions) {
+		MethodVisitor visitor = super.visitMethod(access, name, desc, signature, exceptions);
+		return new CheckNullMethodVisitor(visitor);
 	}
 }

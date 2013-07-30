@@ -27,16 +27,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.List;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.util.Textifier;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.util.TraceClassVisitor;
 
 import de.fhkoeln.gm.cui.javahardener.defectdemos.DemoMethodCall;
 import de.fhkoeln.gm.cui.javahardener.out.ClassPrinter;
 
 public class Test {
+	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws IOException {
 		Class<?> c = DemoMethodCall.class;
 		String className = c.getName();
@@ -62,6 +65,19 @@ public class Test {
 		classReader = new ClassReader(is);
         classReader.accept(new TraceClassVisitor(new PrintWriter(System.out)), 0);
 		
+        
+        ClassNode classNode = new ClassNode();
+        
+        
+        is = c.getResourceAsStream(classFilename);
+		classReader = new ClassReader(is);
+        classReader.accept(classNode, 0);
 		
+        for (MethodNode methodNode : (List<MethodNode>) classNode.methods) {
+        	
+        	System.out.println(methodNode.name);
+        	
+        }
+        
 	}
 }
