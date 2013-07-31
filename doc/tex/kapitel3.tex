@@ -2,15 +2,29 @@
 
 \chapter{Umsetzung}
 
-\begin{itemize}
-\item Stack size anpassen?
-\item Labels anpassem
-\item Toolchain
-\item Shell-Script das Class-Dateien bearbeitet.
-\item Ein kleines Shell-Script welches den Classloader setzt (für bestimmte Klassen?
-\item zB \texttt{javahardener -Dharden=methodcalls -cp … Main}?
-\item oder \texttt{jarh -Dharden=methodcalls beispiel.jar}?
-\end{itemize}
+\section{Maven}
+
+Um die Abhängigkeiten mit Maven runterzuladen kann ein entsprechenden IDE-maven-plugin
+verwednet werden oder die IDE Konfiguration mit den folgenden Befehlen erzeugt werden:
+
+\begin{lstlisting}[basicstyle=\ttfamily,backgroundcolor=\color{source}]
+mvn eclipse:clean eclipse:eclipse -DdownloadSources
+mvn idea:clean idea:eclipse
+\end{lstlisting}
+
+\vspace{0.3cm}
+
+Zum runterladen der Resourcen und compilieren des Projektes kann
+anschließend die IDE verwendet werden oder einer der folgenden Befehle
+zum bauen bzw. paketieren der Klassen als JAR-Datei:
+
+\begin{lstlisting}[basicstyle=\ttfamily,backgroundcolor=\color{source}]
+mvn compile
+mvn test       # Beinhaltet compile
+mvn package    # Beinhaltet test
+\end{lstlisting}
+
+\vspace{0.3cm}
 
 \section{ASM}
 
@@ -27,53 +41,84 @@ drei ASM-Libraries mithilfe von Maven eingebunden:
 		sich in der ebenfalls optionalen Utility-Erweiterung (asm-util-4.x.jar).
 \end{itemize}
 
-\subsection{Maven}
-
-Um die Abhängigkeiten mit Maven runterzuladen kann ein entsprechenden IDE-maven-plugin
-verwednet werden oder die IDE Konfiguration mit den folgenden Befehlen erzeugt werden:
-
-\begin{lstlisting}[basicstyle=\ttfamily,backgroundcolor=\color{source}]
-	mvn eclipse:clean eclipse:eclipse -DdownloadSources
-	mvn idea:clean idea:eclipse
-\end{lstlisting}
-
-Supported maven 2+ (tested with maven 3) commands:
-
-\begin{lstlisting}[basicstyle=\ttfamily,backgroundcolor=\color{source}]
-	mvn compile # download the dependencies and compile the sources
-	mvn package # compiles, test and package the java-hardener sources
-\end{lstlisting}
-
-\vspace{0.3cm}
-
 
 \subsection{Visitor Pattern}
 
-Siehe asm
+Zur Manipulation des Bytecodes verwendet ASM das Visitor Pattern und verschachtelt
+dabei drei verschiedene Visitor Schnittstellen (jeweils als Abstrakte Klassen):
+
+\begin{itemize}
+	\item \texttt{ClassVisitor} für den Header einer Klasse, Annotations, etc.
+			Diese Klasse deligiert den Visitor für Methoden und Klassenvariablen (Fields)
+			an neue Instanzen der folgenden Klassen.
+	\item \texttt{MethodVisitor} bietet visitor Methoden für die Methoden deklaration
+			sowie die enthaltene Implementation (Operationsaufrufe für den virtuellen Java-Prozessor).
+	\item \texttt{FieldVisitor} bietet ausschließlich die Möglichkeit auf die deklarierte,
+			und ggf. annotierte Klassenvariable zu reagieren.
+\end{itemize}
+
+Zum schreiben von Klassen bietet ASM mit der Klasse \texttt{ClassWriter} eine
+Implementierung des \texttt{ClassVisitor} welche sein Ergebnis in einen entsprechden
+Ausgabekanal schreibt.
+
+Zur Visualisierung des Assembler-Codes bietet sich die Klasse \texttt{TraceClassVisitor}
+an welche eine menchenlesbare Ausgabe produziert.
 
 \subsection{Tree / DOM API}
 
-Siehe asm-tree
+Alternativ zum Visitor Pattern bietet die ASM-Tree Bibliothek einen dadrauf aufbauenden
+wahlfreien (DOM-basierten) Zugriff auf den Klassencode.
 
-\section{ClassLoader}
+Dies hat den Vorteil das deutlich komplexere analysen möglich sind und der
+Kontext eines Befehles mit betrachtet werden kann.
+Jedoch sind solche analysen deutlich Komplexer als diese etwa auf
+einem Quellcode-DOM wären da viele Informationen beim reduzieren auf
+Assembler-Bytecode verloren gehen.
 
-Siehe JHClassLoader, CheckNullClassVisitor und CheckNullMethodVisitor.
+\section{Umsetzung automatisierte IFNULL-Prüfung}
 
-It shall use the ASM (Vgl. http://asm.ow2.org/) bytecode manipulation and analysis framework
-and will be implemented as a bytecode-to-bytecode post-processor and maybe also as java \texttt{ClassLoader}.
+Nach einer Testumsetzung und verschiedenen Analysemöglichkeiten findet sich
+das Ergebnis in den beiden Klassen \texttt{CheckNullClassVisitor} sowie
+\texttt{CheckNullMethodVisitor}. Während ersetzter die nötige Schnittstelle für die
+\texttt{ClassReader.accept(ClassVisitor classVisitor, int flags)} Methode implementiert
+hat diese jedoch keine manipulierende Auswirkung auf den Bytecode. Ihre
+einzige Funktion ist es für jede zu prüfende Methode (\texttt{visitMethod})
+eine neue Instanz der Klasse \texttt{CheckNullMethodVisitor} zurück zu geben.
+
+Der Methoden-Vistor kümmert sich anschließend um die Prüfung aller \texttt{INVOKE_*}
+Assembler aufrufe. Hierfür muss die Methode folgende Methode überladen werden:
+
+\texttt{visitMethodInsn(int opcode, String owner, String name, String desc)}
+
+Für nicht behandelete Anwendungsfälle reicht es die Implementierung der Elternklasse
+aufzurufen. Wenn stattdessen andere \texttt{visit*} Methoden der Elternklasse aufgerufen
+werden, werden diese Methoden an den im Konstruktur übergebenen Visitor übergeben.
+
+Auf diese Art können verschiedene \texttt{MethodVisitor} ineinendder geschachtelt
+(chaining) werden und die jeweiligen Teilaufgaben übernehmen. Eine übergebene \texttt{ClassWriter}
+Instanz kann etwa die veränderten visit-Aufrufe in Bytecode umwandeln. Vgl. hierzu
+auch die Debug-Möglichkeiten im Kapitel Umsetzung ClassLoader.
+
+\subsection{Version 1: Grundsätzliches Vorgehen}
 
 
-\section{IFNULL Bytecode manipulation}
+\footnote{Vgl. \href{https://github.com/jerolimov/java-hardener/blob/951f48194f53baebd0915c01e0ed3cc2596bd0db/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L43-66}{CheckNullMethodVisitor.java Zeile 43-66 rev 951f48...}}
 
-Version 1: https://github.com/jerolimov/java-hardener/blob/951f48194f53baebd0915c01e0ed3cc2596bd0db/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L43-66
+\subsection{Version 2: Argumenten Problematik}
 
-Version 2: https://github.com/jerolimov/java-hardener/blob/749111f5dcc3f71a1d1db5a669591288245e912b/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L42-131
+\footnote{Vgl. \href{https://github.com/jerolimov/java-hardener/blob/749111f5dcc3f71a1d1db5a669591288245e912b/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L42-131}{CheckNullMethodVisitor.java Zeile 42-131 rev 749111...}}
 
-Version 3: https://github.com/jerolimov/java-hardener/blob/c6e6bdc7d081eae5e47d2c926073aa3715d908f6/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L42-169
+\subsection{Version 3: Argumenten Problematik}
 
+\footnote{Vgl. \href{https://github.com/jerolimov/java-hardener/blob/c6e6bdc7d081eae5e47d2c926073aa3715d908f6/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L42-169}{CheckNullMethodVisitor.java Zeile 42-169 rev c6e6bd...}}
 
+\subsection{StackSize und Labels}
 
+TODO
 
+\section{Umsetzung ClassLoader}
 
+Siehe JHClassLoader
 
+TODO debug
 
