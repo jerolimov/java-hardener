@@ -4,41 +4,43 @@
 
 \section{Projektergebnis}
 
-Im Rahmen dieses Prototypes wurde gezeigt das auf Basis des Visitor-Patterns
+Im Rahmen dieses Prototypes wurde gezeigt, dass auf Basis des Visitor Patterns
 eine bequeme Anpassung von Java-Bytecode möglich ist. Allerdings bringt
 dieses Vorgehen auch entsprechende Probleme mit sich und der fehlende
-Ausführungskontext verhindert u.a. das dieses Vorgehen auf Methodenaufrufe
+Ausführungskontext verhindert u.a., dass dieses Vorgehen auf Methodenaufrufe
 mit mehr als einem Argument angewendet werden kann.
 
 
 \section{Erweiterungsmöglichkeiten}
 
-Auf Basis der gewonnen Erkenntnis könnte dieses Vorgehen auch in kurzes Zeit
-für weitere NullPointerExceptions-Situationen erweitert werden: Etwa das
-Lesen (Instruktion GETFIELD) oder Schreiben (SETFIELD) von Attributen.
+Auf Basis der gewonnenen Erkenntnis könnte dieses Vorgehen auch in kurzer Zeit
+für weitere Situationen, in dennen \texttt{NullPointerExceptions} auftreten können,
+erweitert werden:
+Beispielsweise das Lesen (Instruktion \texttt{GETFIELD}) oder
+Schreiben (\texttt{SETFIELD}) von Attributen.
 
-Auch der Zugriff auf Arrays ([B,C,S,I,F,L,D,A]ALOAD bzw. [B,C,S,I,F,L,D,A]ASTORE))
-bzw. die Längenprüfung (ARRAYLENGTH) gegen NULL-Zugriff gesichert werden.
+Auch der Zugriff auf Arrays (\texttt{[B,C,S,I,F,L,D,A]ALOAD} bzw. \texttt{[B,C,S,I,F,L,D,A]ASTORE}))
+bzw. das Auslesen der Array-Länge (\texttt{ARRAYLENGTH}) kann so gegen \texttt{NULL}-Zugriff gesichert werden.
 
-Während die zusätzlichen Instruktionen die Performance einer Anwendung negativ beeinflussen
-können wären mögliche Optimierungspotenzialle oft nur über einen großeren Kontext
-(Vorherige Zuweisungen, Schleifen, etc.) zu fassen.
-Für eine Bewertung der Performance wären Änderungsstatiken sowie Performanceanalysen
-nötig.
+Da die zusätzlichen Instruktionen die Performance einer Anwendung negativ beeinflussen
+können, müssten noch weitere mögliche Optimierungspotenzialle erkannt werden. Dieser Kontext,
+etwa Schleifen oder eine vorherige Zuweisung, ist auf Basis des Visitor Patterns
+nicht oder nur sehr schwer zu fassen.
+Für eine Bewertung der Performance wären Änderungsstatiken sowie Performanceanalysen nötig.
 
-Dadrüber hin wären Optionen zum aktivieren/deaktivieren des manipulation auf Package,
-Klassen oder Methoden Basis. Etwa über Umgebungsvariablen.
-So können etwa Zugriffe auf häufige, aber im generellen als \"sichere\" geltene Aufrufe
-ungeprüft bleiben (etwa \texttt{System.[in,out,err].*}-Aufrufe).
+Darüber hinaus wären Optionen zum Aktivieren/Deaktivieren der Manipulationen auf Package,
+Klassen oder Methoden Basis sinnvoll, etwa über Umgebungsvariablen.
+So könnten Zugriffe auf häufige, aber im generellen als sicher geltene Aufrufe
+unverändert bleiben (Z.B. \texttt{System.[in,out,err].*} - Aufrufe).
 
-Ob eine NULL-Prüfung etwa bereits durch den Programmier sichergestellt wurde
-(oder durch ein doppeltes laden durch die hier entwickelten Klassen) läßt sich
-aktuell nicht entscheiden. Auch das in gewissen Situationen eine weitere Prüfung
-nicht nötig wäre könnte auf der Basis der aktuellen Entwicklung nicht nachgerüsstet werden.
-(Variablen Zuweisungen aus einem Konstruktur, Konstante Zuweisungen (etwa eines
-primitiven Datentypes oder eines Strings) oder die für das
-Autoboxing verwendeten Methoden valueOf sind etwa Garantien dafür
-dass eine Variable nicht NULL sein kann.)
+Ob eine \texttt{NULL}-Prüfung bereits durch den Programmier sichergestellt wurde
+(oder durch ein doppeltes laden durch die hier entwickelten Klassen), läßt sich
+aktuell nicht entscheiden. Auch, dass in gewissen Situationen eine weitere Prüfung
+nicht nötig ist, kann auf der Basis der aktuellen Entwicklung nicht nachgerüstet werden.
+So müssen Variablen Zuweisungen aus einem Konstruktur, Konstante Zuweisungen (etwa eines
+primitiven Datentypes oder eines Strings) oder die für das Autoboxing
+verwendeten Methoden \emph{WrapperKlasse}\texttt{.valueOf()} nicht geprüft werden.
+Diese Zuweisungen Garantieren, dass eine Variable nicht-\texttt{NULL} sein kann.
 
 %\section{Reflektion}
 

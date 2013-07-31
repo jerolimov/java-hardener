@@ -2,21 +2,18 @@
 
 \chapter{Analyse}
 
-%Um die Komplexität abschätzen zu können bedarf es der Vorherigen Analyse
-%möglicher Anwendungsfälle oder Probleme.
-
 \section{Problemstellung}
 
-Wie in der Einführung beschrieben, können Objectaufrufe, z.B. durch
+Wie in der Einführung beschrieben, können Objektaufrufe, z.B. durch
 Methoden- und Variablenaufrufe (lesend und schreibend), auf \texttt{NULL}
 durch vorheriges Prüfen gesichert werden.
 Auch andere Fälle, etwa der Zugriff auf Arrays (\texttt{[index]}-Zugriff oder \texttt{.length}) kann
 zu NPE-Ausnahmefehlern führen. Nicht alle diese Anwendungsfälle werden
-in diesem Prototypem umgesetzt sollen aber wenigstens in dieser Einführung angesprochen werden.
+in diesem Prototyp umgesetzt sollen aber wenigstens in dieser Einführung angesprochen werden.
 
 Problematisch sind insbesondere verkettete Aufrufe (vgl. Listing 2.1).
-So müssen die zwischen Ergebnisse etwa in lokalen Variablen gespeichert werden (vgl. Listing 2.2)
-oder die Aufrufe wiederholt werden wenn diese in umgebende Bedingungen einzubauen (vgl. Listing 2.3).
+So müssen die Zwischenergebnisse etwa in lokalen Variablen gespeichert werden (vgl. Listing 2.2)
+oder die Aufrufe wiederholt werden, wenn diese in umgebende Bedingungen eingebaut werden (vgl. Listing 2.3).
 Letzteres würde jedoch nicht nur die Performance negativ beeinflussen, sondern
 könnte bei inmutablen Zugriffen auch zu Fehlerhaften Programmabläufen führen.
 
@@ -56,20 +53,22 @@ primitiver Datentypen sowie deren Wrapper-Typen. Diese implizite Umwandlung wird
 durch zusätzliche Methodenaufrufe durch den Compiler eingewebt und ist für den
 Java-Interpreter nicht von normalen Aufrufen zu unterscheiden.
 
-Für die manipulation des Bytecodes zur Verbesserung der Fehlertoleranz sollte
+Für die Manipulation des Bytecodes zur Verbesserung der Fehlertoleranz sollte
 dies ebenfalls keinen Unterschied bieten.
 
 
 \section{Bytecode-Analyse}
 
-Mithilfe des im ASM enthaltenenen Textifier Programms können verschiedene Lösungswege
+Mithilfe des im ASM enthaltenen \texttt{Textifier} Anwendung können verschiedene Lösungswege
 deassembliert und analysiert werden. Zum einfacheren Aufruf wurde ein kleines Shell-Script
 (siehe textifier) erstellt. Mitdessen Hilfe wurden etwa für das in Listing 2.4 angegebene
 Java-File die in 2.5 angegebene Ausgabe erzeugt.
 
 Der Aufruf erfolgt über den Scriptnamen gefolgt von einer Java-Bytecode-Datei:
 
-\texttt{./textifier target/test-classes/de/.../testcases/Test1.class}
+\vspace{0.3cm}
+
+\texttt{./textifier target/test-classes/de/fhkoeln/.../testcases/Test1.class}
 
 
 \subsection{Ausgangsbasis}
@@ -81,17 +80,17 @@ public class Test1 {
 	}
 }
 \end{lstlisting}
-\centerline{Listing 2.4: Beispiel Sourcecode mit Null-Prüfung}
+\centerline{Listing 2.4: Beispiel Sourcecode ohne NULL-Prüfung}
 
 \vspace{0.3cm}
 
 
 \begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
-public class de/fhkoeln/gm/cui/javahardener/testcases/Test1 {
-  public getStringLength(Ljava/util/Map;LString;)I
+public class de/fhkoeln/.../testcases/Test1 {
+  public getStringLength(LMap;LString;)I
     ALOAD 1
     ALOAD 2
-    INVOKEINTERFACE java/util/Map.get (LObject;)LObject;
+    INVOKEINTERFACE Map.get (LObject;)LObject;
     CHECKCAST String
     INVOKEVIRTUAL String.length ()I
     IRETURN
@@ -99,29 +98,30 @@ public class de/fhkoeln/gm/cui/javahardener/testcases/Test1 {
     MAXLOCALS = 3
 }
 \end{lstlisting}
-\centerline{Listing 2.5: Auszug ASM Assembler-Ausgabe für Listing 2.4}
+\centerline{Listing 2.5: Bytecode Auszug für Listing 2.4}
 
 \vspace{0.3cm}
 
-Im folgenden sollen die Unterschiede aufgezeiugt werden, wenn man diese ursprüngliche
-Version mit gegen NPE gesicherte Versionen vergleicht. Die dafür angelegten Klassen
-befinden sich im test-Ordner innerhalb des Java-Packages \texttt{analysebytecode}.
+Im Folgenden sollen die Unterschiede aufgezeigt werden, wenn man diese ursprüngliche
+Version mit einer \texttt{NPE}-gesicherte Versionen vergleicht. Die dafür angelegten Klassen
+befinden sich im Quellcode-Ordner \texttt{test} innerhalb des Java-Packages \texttt{de.fhkoeln...analysebytecode}.
 
 \vspace{0.3cm}
 
 
-\subsection{Bedingungsoperator ?:}
+\subsection{Bedingte Ausführung}
 
-Durch eine \texttt{NULL}-Prüfung mit einem Bedingungsoperator
-(etwa \texttt{e != null ? e.toString() : null})
+Durch eine \texttt{NULL}-Prüfung, etwa mit einem Bedingungsoperator \texttt{?:},
 fügt der Compiler zwei Labels (Ziele für Springmarken) ein und prüft
-anschließend die aktuell auf dem Stack liegende entry Variable (vgl. Listing 2.6 Zeile 1)
-auf null (Z. 2). Ergebnis die \texttt{NULL}-Prüfung wahr springt die Ausführung
-zur angegebenen Sprungmarke (hier L0) und fügt eine \texttt{NULL}-Referenz auf den Stack hinzu.
-Falls die \texttt{NULL}-Prüfung falsch ergibt wird die Ausführung fortgesetzt
+anschließend die aktuell auf dem Stack liegende Variable auf \texttt{NULL}
+(vgl. Listing 2.6 Zeile 2). Ergibt etwa die Prüfung von
+\texttt{e != null ? e.toString() : null}, dass die Variable \texttt{NULL} ist,
+so springt die Ausführung zur angegebenen Sprungmarke (hier \texttt{L0})
+und fügt eine \texttt{NULL}-Referenz auf den Stack hinzu (Zeile 7).
+Falls die \texttt{NULL}-Prüfung jedoch negativ ausviel, wird die Ausführung fortgesetzt
 und der eigentliche Methodenaufruf durchgeführt (\texttt{INVOKEVIRTUAL} in Zeile 4).
-Um anschließend den nicht benötigten Alternativen Zweig der Anwendung zu gehen wird
-dieser mithilfe eines \texttt{GOTO}s (hier zur Sprungmarke L1) übersprungen.
+Um anschließend den nicht benötigten alternativen Zweig der Anwendung zu gehen,
+wird dieser mithilfe eines \texttt{GOTO}s (hier zur Sprungmarke \texttt{L1}) übersprungen.
 
 \begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
     ALOAD 2 /* entry */
@@ -159,9 +159,9 @@ try {
 
 \vspace{0.3cm}
 
-Der dadrauf entstehende Bytecode speichert das Ergebnis des Originalaufrufs
+Der daraufhin entstehende Bytecode speichert das Ergebnis des Originalaufrufs
 in einer lokalen Variable (Listing 2.8 Zeile 4 und 5). Sollte es während
-dieses Aufrufs zu einer Fehlerbehandlung kommen wird diese Variable mit
+dieses Aufrufs zu einer Fehlerbehandlung kommen, wird diese Variable mit
 einer \texttt{NULL}-Referenz überschrieben (Zeile 10 und 11).
 
 
@@ -183,12 +183,12 @@ einer \texttt{NULL}-Referenz überschrieben (Zeile 10 und 11).
 
 \vspace{0.3cm}
 
-Insgesamt fällt auf das dieser Code bereits bei diesem einfachem Beispiel deutlich
+Insgesamt fällt auf, dass dieser Code bereits bei diesem einfachen Beispiel deutlich
 mehr Intruktionen beinhaltet als die zuvor genannte Bedingungsoperator-Variante.
 Gleichzeitig wird für quasi jeden Methodenaufruf eine zusätzliche lokale Variable
 benötigt. (Ggf. könnten diese auf eine Varaible je Datentyp kombiniert werden.)
 
-Dadrüber hinaus würde diese Variante nicht nur unmittelbare NullPointerExceptions
+Darüber hinaus würde diese Variante nicht nur unmittelbare NullPointerExceptions
 abfangen sondern auch Fehler welche innerhalb der Methode ausgeführt werden und
 ggf. gar nicht vom java-hardener manipuliert wurden.
 

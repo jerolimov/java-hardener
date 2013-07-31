@@ -14,9 +14,9 @@ mvn idea:clean idea:eclipse
 
 \vspace{0.3cm}
 
-Zum runterladen der Resourcen und compilieren des Projektes kann
+Zum Herrunterladen der Resourcen und compilieren des Projektes kann
 anschließend die IDE verwendet werden oder einer der folgenden Befehle
-zum bauen bzw. paketieren der Klassen als JAR-Datei:
+zum Bauen bzw. Paketieren der Klassen als JAR-Datei:
 
 \begin{lstlisting}[basicstyle=\ttfamily,backgroundcolor=\color{source}]
 mvn compile
@@ -29,12 +29,12 @@ mvn package    # Beinhaltet test
 \section{ASM}
 
 Zur Manipulation von Java Bytecode bietet sich die leichtgewichtige und speziel
-dafür entwickelte OpenSource-Bibliothek ASM an. Während der Entwicklung wurden
+dafür entwickelte OpenSource-Bibliothek ASM\footnote{Weitereführende Informationen zu ASM auf der offiziellen Homepage: http://asm.ow2.org/, besucht am 31.08.2013} an. Während der Entwicklung wurden
 drei ASM-Libraries mithilfe von Maven eingebunden:
 
 \begin{itemize}
 \item Die Kernbibliothek ASM (asm-4.x.jar) bietet Schnittstellen zum Einlesen und Schreiben
-		von Class-Dateien mithilfe des Visitor-Patterns.
+		von Class-Dateien mithilfe des Visitor Patterns.
 \item Optional kann ASM durch eine Library zum DOM-basierten Zugriff auf den
 		Bytecode erweitert werden (asm-tree-4.x.jar).
 \item Häufig verwendete Methoden, etwa zum Ausgeben von Assembler-Code finden
@@ -50,84 +50,83 @@ dabei drei verschiedene Visitor Schnittstellen (jeweils als Abstrakte Klassen):
 \begin{itemize}
 	\item \texttt{ClassVisitor} für den Header einer Klasse, Annotations, etc.
 			Diese Klasse deligiert den Visitor für Methoden und Klassenvariablen (Fields)
-			an neue Instanzen der folgenden Klassen.
-	\item \texttt{MethodVisitor} bietet visitor Methoden für die Methoden deklaration
-			sowie die enthaltene Implementation (Operationsaufrufe für den virtuellen Java-Prozessor).
+			an neue Instanzen der beiden folgenden Klassen.
+	\item \texttt{MethodVisitor} Instanzen werden für jede Methodendeklaration,
+			sowie die enthaltene Implementation
+			(jede Instruktion für den virtuellen Java-Prozessor).
 	\item \texttt{FieldVisitor} bietet ausschließlich die Möglichkeit auf die deklarierte,
 			und ggf. annotierte Klassenvariable zu reagieren.
 \end{itemize}
 
-Zum schreiben von Klassen bietet ASM mit der Klasse \texttt{ClassWriter} eine
-Implementierung des \texttt{ClassVisitor} welche sein Ergebnis in einen entsprechden
+Zum Schreiben von Klassen bietet ASM mit der Klasse \texttt{ClassWriter} eine
+Implementierung des \texttt{ClassVisitor} welche sein Ergebnis in einen entsprechenden
 Ausgabekanal schreibt.
 
-Zur Visualisierung des Assembler-Codes bietet sich die Klasse \texttt{TraceClassVisitor}
-an welche eine menchenlesbare Ausgabe produziert.
+Mithilfe der Klasse \texttt{TraceClassVisitor} können Bytecode Daten
+in für menschen deutlich bessere, Assembler-artige Ausgaben umgewandelt werden.
 
 \subsection{Tree / DOM API}
 
-Alternativ zum Visitor Pattern bietet die ASM-Tree Bibliothek einen dadrauf aufbauenden
+Alternativ zum Visitor Pattern bietet die ASM-Tree Bibliothek einen darauf aufbauenden
 wahlfreien (DOM-basierten) Zugriff auf den Klassencode.
 
-Dies hat den Vorteil das deutlich komplexere analysen möglich sind und der
+Dies hat den Vorteil das deutlich komplexere Analysen möglich sind und der
 Kontext eines Befehles mit betrachtet werden kann.
-Jedoch sind solche analysen deutlich Komplexer als diese etwa auf
-einem Quellcode-DOM wären da viele Informationen beim reduzieren auf
+Jedoch sind solche Analysen deutlich komplexer als diese etwa auf
+einem Quellcode-DOM wären, da viele Informationen beim Reduzieren auf
 Assembler-Bytecode verloren gehen.
 
 \section{Umsetzung automatisierte IFNULL-Prüfung}
 
 Nach einer Testumsetzung und verschiedenen Analysemöglichkeiten findet sich
 das Ergebnis in den beiden Klassen \texttt{CheckNullClassVisitor} sowie
-\texttt{CheckNullMethodVisitor}. Während ersetzter die nötige Schnittstelle für die
-\texttt{ClassReader.accept(ClassVisitor classVisitor, int flags)} Methode implementiert
+\texttt{CheckNullMethodVisitor}. Während Erstere die nötige Schnittstelle für die
+\texttt{ClassReader.accept(ClassVisitor classVisitor, int flags)} Methode implementiert,
 hat diese jedoch keine manipulierende Auswirkung auf den Bytecode. Ihre
 einzige Funktion ist es für jede zu prüfende Methode (\texttt{visitMethod})
 eine neue Instanz der Klasse \texttt{CheckNullMethodVisitor} zurück zu geben.
 
 Der Methoden-Vistor kümmert sich anschließend um die Prüfung aller \texttt{INVOKE\_\*}
-Assembler aufrufe. Hierfür muss die Methode folgende Methode überladen werden:
+Assembler Aufrufe. Hierfür muss die Methode \texttt{visitMethodInsn} überschrieben werden.
 
-\texttt{visitMethodInsn(int opcode, String owner, String name, String desc)}
-
-Für nicht behandelete Anwendungsfälle reicht es die Implementierung der Elternklasse
+Für nicht behandelte Anwendungsfälle reicht es die Implementierung der Elternklasse
 aufzurufen. Wenn stattdessen andere \texttt{visit*} Methoden der Elternklasse aufgerufen
 werden, werden diese Methoden an den im Konstruktur übergebenen Visitor übergeben.
 
-Auf diese Art können verschiedene \texttt{MethodVisitor} ineinendder geschachtelt
+Auf diese Art können verschiedene \texttt{MethodVisitor} ineinander geschachtelt
 (chaining) werden und die jeweiligen Teilaufgaben übernehmen. Eine übergebene \texttt{ClassWriter}
 Instanz kann etwa die veränderten visit-Aufrufe in Bytecode umwandeln. Vgl. hierzu
 auch die Debug-Möglichkeiten im Kapitel Umsetzung ClassLoader.
 
 \subsection{Iteration 1: Grundsätzliches Vorgehen}
 
-Die erste prototische Umsetzung\footnote{Vgl. Projektsourcen - Rev 951f48 \href{https://github.com/jerolimov/java-hardener/blob/951f48194f53baebd0915c01e0ed3cc2596bd0db/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L43-66}{CheckNullMethodVisitor.java Zeile 43-66}} der Klasse \texttt{CheckNullMethodVisitor} behandelte Ausschließlich
+Die erste prototische Umsetzung\footnote{Vgl. Projektsourcen - Rev 951f48 {\href{https://github.com/jerolimov/java-hardener/blob/951f48194f53baebd0915c01e0ed3cc2596bd0db/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L43-66}{CheckNullMethodVisitor.java Zeile 43-66}}} der Klasse \texttt{CheckNullMethodVisitor} behandelte ausschließlich
 den Methodenaufruf \texttt{String.length()}. Alle anderen Aufrufe wurden
 in dieser Version nicht beachtet. Für die Null-Prüfung wurde der Original Aufruf
 in eine Bedingung mit Sprungbefehlen gekapselt.
 
 Um den Original Aufruf nicht zu verändern muss die aktuelle Stackreferenz
-auf das Objekt welches die Methode ausführt mittels \texttt{DUP} (vgl. Listing 3.1 Zeile 5)
+auf das Objekt, welches die Methode ausführt, mittels \texttt{DUP} (vgl. Listing 3.1 Zeile 5)
 verdoppelt werden. Diese neue Referenz wird bei der \texttt{NULL}-Prüfung mit
 \texttt{IFNULL} wieder vom Stack gelöscht. Ergibt die Prüfung das es sich um
-eine \texttt{NULL}-Referenz handelt springt deie Luafzeitumgebung zur
-angegebenen Springmarke (hier \texttt{Label fallback}, vgl. Zeile 2, 6 und 10).
-Wenn die NULL-Prüfung ergibt das es zu keiner NullPointerException kommen
-wird wird in der nächsten Intruktion der Original Aufruf durchgeführt
-und hier die super Methode aufgerufen welche die Argumente an den jeweils
+eine \texttt{NULL}-Referenz handelt, springt die Laufzeitumgebung zur
+angegebenen Sprungmarke (hier \texttt{Label fallback}, vgl. Zeile 2, 6 und 10).
+Wenn die \texttt{NULL}-Prüfung ergibt, dass es zu keiner \texttt{NPE} kommen
+wird, wird in der nächsten Intruktion der Original Aufruf durchgeführt
+und hier die \texttt{super}-Methode aufgerufen, welche die Argumente an den jeweils
 nachgeschalteten \texttt{MethodVisitor} übergibt.
 Um den im folgendenen beschriebenen alternativen Anwendungspfad nicht
-zu durchlaufen wird dieser mit einem \texttt{GOTO} und der Zielsprungmarke
+zu durchlaufen, wird dieser mit einem \texttt{GOTO} und der Zielsprungmarke
 übersprungen.
 
 Falls der Aufruf nicht ausgeführt werden soll, da die aktuelle Pointerreferenz \texttt{NULL}
-ist muss dieser Aufruf mithilfe von \texttt{POP} vom Stack entfernt werden.
-(Während die duplizierte Adresse von IFNULL aufgebraucht wurde, würde der
+ist, muss dieser Aufruf mithilfe von \texttt{POP} vom Stack entfernt werden.
+Während die duplizierte Adresse von \texttt{IFNULL} aufgebraucht wurde, würde der
 eigentliche Aufruf einer Methode die Objektreferenz löschen und durch das Ergebnis
-ersetzen.)
+ersetzen.
 
 Damit die nächsten Instruktionen mit dem erwartetem Ergebnis auf dem Stack
-rechnen können muss anschließend nur noch ein Standard-Ergebnis
+rechnen können, muss anschließend nur noch ein Standard-Ergebnis
 auf den Stack geschrieben werden. Für die aktuelle Methode (\texttt{String.length()})
 bietet sich hierfür die Instruktion \texttt{ICONST\_0} an. Dies fügt ein int 0 dem Stack hinzu.
 
@@ -154,23 +153,24 @@ public void visitMethodInsn(...) {
 \subsection{Iteration 2: Verfielfältigung}
 
 Bei der zweiten Iteration\footnote{Vgl. Projektsourcen Rev 749111 - \href{https://github.com/jerolimov/java-hardener/blob/749111f5dcc3f71a1d1db5a669591288245e912b/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L42-131}{CheckNullMethodVisitor.java Zeile 42-131}}
-wurde versucht dieses Vorgehen auch auf andere Methoden anzuwenden und die
+wurde versucht, dieses Vorgehen auch auf andere Methoden anzuwenden und die
 jeweiligen Unterschiede zu beleuchten.
 
-Problematisch dabei ist die Reihenfolge des Stacks für den jeweiligen Methodenaufruf.
-So liegen auf oberster Position die Argumente und erst \"unter diesem\" die eigentliche
-Referenz auf das Objekt wessen Methode aufgerufen werden soll. Um die Objektreferenz
-einer \texttt{NULL}-Prüfung mit \texttt{IFNULL} unterzuziehen zu können muss
-jedoch diese jedoch oben auf dem Stack aufliegen.
+Problematisch ist dabei die Reihenfolge des Stacks für den jeweiligen Methodenaufruf.
+So liegen auf oberster Position des Stacks die nötigen Argumente, und erst unter diesen
+die eigentliche Objektreferenz dessen Methode aufgerufen werden soll.
+Um die Objektreferenz einer \texttt{NULL}-Prüfung mit \texttt{IFNULL} unterziehen
+zu können, muss jedoch diese Referenz jedoch oben auf dem Stack aufliegen.
 
-Für Methoden mit nur einem Argument konnte dies noch einfach über das Hintereinander
-schalten der beiden Intruktionen \texttt{DUP2} sowie \texttt{POP} sein.
+Für Methoden mit nur einem Argument konnte dies noch einfach über das Hintereinanderschalten
+der beiden Intruktionen \texttt{DUP2} sowie \texttt{POP} sein.
 Während der erste Befehl (bei nur einem Argument) die Referenz des Objektes und des Arguments
 kopiert, wird die des Arguments anschließend wider entfernt.
 
-Für eine Beispielhafte Implementierung für die Methode \texttt{Map.get(Object)}
-muss schließlich nicht nur eine Referenz sondern ebenfalls zwei Referenzen vom
-Stack gegen eine NULL-Referenz (anstatt eines int 0) ersetzt werden (Vgl. Listing 3.2).
+Für eine beispielhafte Implementierung für die Methode \texttt{Map.get(Object)}
+muss schließlich nicht nur eine Referenz, sondern ebenfalls zwei Referenzen vom
+Stack gegen eine \texttt{NULL}-Referenz (anstatt eines \emph{int 0}) ersetzt werden
+(vgl. Listing 3.2).
 
 \begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
 super.visitInsn(Opcodes.DUP2);
@@ -183,7 +183,7 @@ super.visitInsn(Opcodes.ACONST_NULL);
 
 \vspace{0.3cm}
 
-Dieser Mechanismus funktioniert jedoch nur Argumente mit maximal einem Parameter.
+Dieser Mechanismus funktioniert jedoch nur für Methoden mit maximal einem Argument.
 Gleichzeitig darf dieser Parameter weder ein \texttt{long} noch ein \texttt{double} sein,
 da die \texttt{DUP2} Instruktion den Stack bit-orientiert kopiert\footnote{Vgl. http://en.wikipedia.org/wiki/Java\_bytecode\_instruction\_listings}.
 
@@ -193,13 +193,13 @@ Mit der dritten Iteration\footnote{Vgl. Projektsourcen Rev c6e6bd - \href{https:
 wurden schließlich die Sonderbehandlungen für \texttt{String.length()} und
 \texttt{Map.get(Object)} gegen eine allgemeingültigere Implementierung ersetzt.
 Entsprechend der vorhergenannten Einschränkungen können aktuell nur Methoden ohne
-bzw. maximal einem Argument so manipuliert werden das es zu keiner NPE kommen kann
+bzw. maximal einem Argument so manipuliert werden, dass es zu keiner \texttt{NPE} kommen kann
 (vgl. Listing 3.3).
 
-Über den Rückgabetyp der Funktion kann zusätzlich erkannt werden von
+Über den Rückgabetyp der Funktion kann zusätzlich erkannt werden, von
 welchem Typ ein entsprechender Eintrag auf dem Stack sein muss.
-Auch wenn dieser Unterschied zur Laufzeit vermutlich keine Relevanz hat
-wird bei laden der Klasse der Bytecode auf innere Korrektheit geprüft
+Auch wenn dieser Unterschied zur Laufzeit vermutlich keine Relevanz hat,
+wird beim Laden der Klasse der Bytecode auf innere Korrektheit geprüft
 was den korrekten Datentyp erforderte (vgl. Listing 3.4).
 
 \begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
@@ -238,21 +238,21 @@ private void pushDefault(Type type) {
 
 \subsection{StackSize und Labels}
 
-Die maximale Stacksize kann surch durch dieses Vorgehen ändern und sollte
+Die maximale Stacksize kann sich durch dieses Vorgehen ändern und sollte
 im ungünstigsten Fall \emph{1 x Anzahl Methoden ohne Argumente +}
 \emph{2 x Anzahl Methoden mit einem Argument} größer werden.
-Dieser unwahrscheinliche Fall tritt jedoch nur auf wenn alle Methoden
-Ergebnisse (ohne Lokale Zwischenspeicherung in Variablen) aufeinander aufbauen.
+Dieser unwahrscheinliche Fall tritt jedoch nur auf, wenn alle Methoden
+(ohne Lokale Zwischenspeicherung in Variablen) unmittelbar aufeinander aufbauen.
 
 Zur Optimierung innerhalb der Java-Laufzeitumgebung beinhalten Methoden
-die Informationen wieviele elemente sich maximal auf dem Stack befinden können.
-Diese Variable (\texttt{MAXSTACK =} \emph{n}) muss entsprechend der oben
+die Informationen wieviele Elemente sich maximal auf dem Stack befinden können.
+Dieser Wert (\texttt{MAXSTACK =} \emph{n}) muss entsprechend der oben
 gekannten Berechnungen angepasst werden.
 
-Durch das setzen des \texttt{ClassWriter.COMPUTE\_MAXS} flags beim erzeugen
+Durch das Setzen des \texttt{ClassWriter.COMPUTE\_MAXS} flags beim Erzeugen
 einer \texttt{ClassWriter} Instanz kann die ASM Bibliothek diese Berechnung
-übernehmen. Da der Java-Bytecode beim laden entsprechende Konsistenz-Prüfungen 
-vornimmt ist es drigend erforderlich das dieses erneute Berechnung stattfinden.
+übernehmen. Da der Java-Bytecode beim Laden entsprechende Konsistenz-Prüfungen 
+vornimmt, ist es zwigend erforderlich, dass diese erneute Berechnung stattfindet.
 
 
 \section{Umsetzung ClassLoader}
