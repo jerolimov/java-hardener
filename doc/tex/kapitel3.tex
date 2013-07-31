@@ -3,18 +3,10 @@
 \chapter{Umsetzung}
 
 \begin{itemize}
-\item Analyse / Einarbeitung
-\item Bytecode
-\item ASM
-\item Eclipse Plugin das asm befehle anzeigt verwenden?
-\item Statistiken ausgeben
-\item Anaylse Umsetzungsmöglichkeiten (aus \texttt{variable.doAnything()} wird z.b.)
-\item Springmarke mit \texttt{label} / \texttt{goto}?
 \item Stack size anpassen?
 \item Labels anpassem
 \item Toolchain
 \item Shell-Script das Class-Dateien bearbeitet.
-\item Classloader schreiben?
 \item Ein kleines Shell-Script welches den Classloader setzt (für bestimmte Klassen?
 \item zB \texttt{javahardener -Dharden=methodcalls -cp … Main}?
 \item oder \texttt{jarh -Dharden=methodcalls beispiel.jar}?
@@ -22,35 +14,35 @@
 
 \section{ASM}
 
-\subsection{Dependencies}
+Zur Manipulation von Java Bytecode bietet sich die leichtgewichtige und speziel
+dafür entwickelte OpenSource-Bibliothek ASM an. Während der Entwicklung wurden
+drei ASM-Libraries mithilfe von Maven eingebunden:
 
 \begin{itemize}
-\item asm-4.x.jar
-\item hamcrest-core-1.x.jar (for asm)
-\item junit-4.x.jar
+\item Die Kernbibliothek ASM (asm-4.x.jar) bietet Schnittstellen zum Einlesen und Schreiben
+		von Class-Dateien mithilfe des Visitor-Patterns.
+\item Optional kann ASM durch eine Library zum DOM-basierten Zugriff auf den
+		Bytecode erweitert werden (asm-tree-4.x.jar).
+\item Häufig verwendete Methoden, etwa zum Ausgeben von Assembler-Code finden
+		sich in der ebenfalls optionalen Utility-Erweiterung (asm-util-4.x.jar).
 \end{itemize}
 
 \subsection{Maven}
 
-Dependencies and the IDE configuration files are not part of the git repository.
-To download them use the maven plugin of your IDE or one of these commands:
+Um die Abhängigkeiten mit Maven runterzuladen kann ein entsprechenden IDE-maven-plugin
+verwednet werden oder die IDE Konfiguration mit den folgenden Befehlen erzeugt werden:
 
-Use your IDE maven-plugins to import the projects or configure your project
-with one of these maven 2+ (tested with maven 3.1) commands:
-
-\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+\begin{lstlisting}[basicstyle=\ttfamily,backgroundcolor=\color{source}]
 	mvn eclipse:clean eclipse:eclipse -DdownloadSources
 	mvn idea:clean idea:eclipse
 \end{lstlisting}
-\centerline{Listing 4.2: Beispiel für eine XMPP-PubSub-Nachricht ohne Absender-Verifizierung}
 
 Supported maven 2+ (tested with maven 3) commands:
 
-\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+\begin{lstlisting}[basicstyle=\ttfamily,backgroundcolor=\color{source}]
 	mvn compile # download the dependencies and compile the sources
 	mvn package # compiles, test and package the java-hardener sources
 \end{lstlisting}
-\centerline{Listing 4.2: Beispiel für eine XMPP-PubSub-Nachricht ohne Absender-Verifizierung}
 
 \vspace{0.3cm}
 

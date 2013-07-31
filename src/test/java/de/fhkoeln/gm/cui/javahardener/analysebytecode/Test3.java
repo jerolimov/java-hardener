@@ -30,10 +30,11 @@ public class Test3 {
 	public static void main(String[] args) {
 		Map<String, String> map = new LinkedHashMap<>();
 		String entry = map.get("key");
-		int l = 0;
+		int l;
 		try {
 			l = entry.length();
 		} catch (NullPointerException e) {
+			l = 0;
 		}
 		System.out.println(l);
 	}

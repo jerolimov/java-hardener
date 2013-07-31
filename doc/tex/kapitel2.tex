@@ -62,9 +62,17 @@ dies ebenfalls keinen Unterschied bieten.
 
 \section{Bytecode-Analyse}
 
-Die folgenden SHELL SCRIPT....
+Mithilfe des im ASM enthaltenenen Textifier Programms können verschiedene Lösungswege
+deassembliert und analysiert werden. Zum einfacheren Aufruf wurde ein kleines Shell-Script
+(siehe textifier) erstellt. Mitdessen Hilfe wurden etwa für das in Listing 2.4 angegebene
+Java-File die in 2.5 angegebene Ausgabe erzeugt.
+
+Der Aufruf erfolgt über den Scriptnamen gefolgt von einer Java-Bytecode-Datei:
+
+\texttt{./textifier target/test-classes/de/fhkoeln/gm/cui/javahardener/testcases/Test1.class}
 
 
+\subsection{Ausgangsbasis}
 
 \begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
 package de.fhkoeln.gm.cui.javahardener.testcases;
@@ -75,6 +83,8 @@ public class Test1 {
 }
 \end{lstlisting}
 \centerline{Listing 2.4: Beispiel Sourcecode mit Null-Prüfung}
+
+\vspace{0.3cm}
 
 
 \begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
@@ -92,4 +102,83 @@ public class de/fhkoeln/gm/cui/javahardener/testcases/Test1 {
 \end{lstlisting}
 \centerline{Listing 2.5: Auszug ASM Assembler-Ausgabe für Listing 2.4}
 
+\vspace{0.3cm}
+
+
+Im folgenden sollen die Unterschiede aufgezeiugt werden, wenn man diese ursprüngliche
+Version mit gegen NPE gesicherte Versionen vergleicht. Die dafür angelegten Klassen
+befinden sich im test-Ordner innerhalb des Java-Packages
+\texttt{de.fhkoeln.gm.cui.javahardener.analysebytecode}.
+
+\subsection{Bedingungsoperator ?:}
+
+Durch die Null-Prüfung mit einem Bedingungsoperator
+(etwa \texttt{entry != null ? entry.toString() : null})
+fügt der Compiler zwei Labels (Ziele für Springmarken) ein und prüft
+anschließend die aktuell auf dem Stack liegende entry Variable (vgl. Listing 2.6 Zeile 1)
+auf null (Z. 2). Ergebnis die \texttt{NULL}-Prüfung wahr springt die Ausführung
+zur angegebenen Sprungmarke (hier L0) und fügt eine \texttt{NULL}-Referenz auf den Stack hinzu.
+Falls die \texttt{NULL}-Prüfung falsch ergibt wird die Ausführung fortgesetzt
+und der eigentliche Methodenaufruf durchgeführt (\texttt{INVOKEVIRTUAL} in Zeile 4).
+Um anschließend den nicht benötigten Alternativen Zweig der Anwendung zu gehen wird
+dieser mithilfe eines \texttt{GOTO}s (hier zur Sprungmarke L1) übersprungen.
+
+\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+    ALOAD 2 /* entry */
+    IFNULL L0
+    ALOAD 2 /* entry */
+    INVOKEVIRTUAL java/lang/String.toString ()Ljava/lang/String;
+    GOTO L1
+   L0
+    ACONST_NULL
+   L1
+\end{lstlisting}
+\centerline{Listing 2.6: Auszug ASM für Null-Prüfung mit Bedingungsoperator}
+
+\vspace{0.3cm}
+
+
+\subsection{Try-Catch}
+
+Eine weitere Möglichkeit wäre die mögliche Ausnahmebehandlung von dem eingebauten
+try-catch Mechanismus behandeln zu lassen und einen entsprechenden Block um
+den möglicherweise zu fehlern führenden Aufruf zu erstellen.
+
+Für dieses Vorgehen wird eine zusätzliche lokale Variable benötigt,
+welche im Fehlerfall mit einem Defaultwert gefüllt wird:
+
+\texttt{int l; try { l = entry.length(); } catch (NPE e) { l = 0 }}
+
+Der dadrauf entstehende Bytecode speichert das Ergebnis des Originalaufrufs
+in einer lokalen Variable (Listing 2.7 Zeile 4 und 5). Sollte es während
+dieses Aufrufs zu einer Fehlerbehandlung kommen wird diese Variable mit
+einer \texttt{NULL}-Referenz überschrieben (Zeile 10 und 11).
+
+
+\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+    TRYCATCHBLOCK L0 L1 L2 java/lang/NullPointerException
+   L0
+    ALOAD 2
+    INVOKEVIRTUAL java/lang/String.length ()I
+    ISTORE 3
+   L1
+    GOTO L3
+   L2
+    ASTORE 4
+    ICONST_0
+    ISTORE 3
+   L3
+\end{lstlisting}
+\centerline{Listing 2.7: Auszug ASM für Null-Prüfung mit try-catch}
+
+\vspace{0.3cm}
+
+Insgesamt fällt auf das dieser Code bereits bei diesem einfachem Beispiel deutlich
+mehr Intruktionen beinhaltet als die zuvor genannte Bedingungsoperator-Variante.
+Gleichzeitig wird für quasi jeden Methodenaufruf eine zusätzliche lokale Variable
+benötigt. (Ggf. könnten diese auf eine Varaible je Datentyp kombiniert werden.)
+
+Dadrüber hinaus würde diese Variante nicht nur unmittelbare NullPointerExceptions
+abfangen sondern auch Fehler welche innerhalb der Methode ausgeführt werden und
+ggf. gar nicht vom java-hardener manipuliert wurden.
 
