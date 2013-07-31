@@ -85,7 +85,7 @@ hat diese jedoch keine manipulierende Auswirkung auf den Bytecode. Ihre
 einzige Funktion ist es für jede zu prüfende Methode (\texttt{visitMethod})
 eine neue Instanz der Klasse \texttt{CheckNullMethodVisitor} zurück zu geben.
 
-Der Methoden-Vistor kümmert sich anschließend um die Prüfung aller \texttt{INVOKE_*}
+Der Methoden-Vistor kümmert sich anschließend um die Prüfung aller \texttt{INVOKE\_\*}
 Assembler aufrufe. Hierfür muss die Methode folgende Methode überladen werden:
 
 \texttt{visitMethodInsn(int opcode, String owner, String name, String desc)}
@@ -99,18 +99,97 @@ Auf diese Art können verschiedene \texttt{MethodVisitor} ineinendder geschachte
 Instanz kann etwa die veränderten visit-Aufrufe in Bytecode umwandeln. Vgl. hierzu
 auch die Debug-Möglichkeiten im Kapitel Umsetzung ClassLoader.
 
-\subsection{Version 1: Grundsätzliches Vorgehen}
+\subsection{Iteration 1: Grundsätzliches Vorgehen}
+
+Die erste prototische Umsetzung\footnote{Vgl. Projektsourcen - Rev 951f48 \href{https://github.com/jerolimov/java-hardener/blob/951f48194f53baebd0915c01e0ed3cc2596bd0db/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L43-66}{CheckNullMethodVisitor.java Zeile 43-66}} der Klasse \texttt{CheckNullMethodVisitor} behandelte Ausschließlich
+den Methodenaufruf \texttt{java.lang,String.length()}. Alle anderen Aufrufe wurden
+in dieser Version nicht beachtet. Für die Null-Prüfung wurde der Original Aufruf
+in eine Bedingung mit Sprungbefehlen gekapselt.
+
+Um den Original Aufruf nicht zu verändern muss die aktuelle Stackreferenz
+auf das Objekt welches die Methode ausführt mittels \texttt{DUP} (vgl. Listing 3.1 Zeile 5)
+verdoppelt werden. Diese neue Referenz wird bei der \texttt{NULL}-Prüfung mit
+\texttt{IFNULL} wieder vom Stack gelöscht. Ergibt die Prüfung das es sich um
+eine \texttt{NULL}-Referenz handelt springt deie Luafzeitumgebung zur
+angegebenen Springmarke (hier \texttt{Label fallback}, vgl. Zeile 2, 6 und 10).
+Wenn die NULL-Prüfung ergibt das es zu keiner NullPointerException kommen
+wird wird in der nächsten Intruktion der Original Aufruf durchgeführt
+und hier die super Methode aufgerufen welche die Argumente an den jeweils
+nachgeschalteten \texttt{MethodVisitor} übergibt.
+Um den im folgendenen beschriebenen alternativen Anwendungspfad nicht
+zu durchlaufen wird dieser mit einem \texttt{GOTO} und der Zielsprungmarke
+übersprungen.
+
+Falls der Aufruf nicht ausgeführt werden soll, da die aktuelle Pointerreferenz \texttt{NULL}
+ist muss dieser Aufruf mithilfe von \texttt{POP} vom Stack entfernt werden.
+(Während die duplizierte Adresse von IFNULL aufgebraucht wurde, würde der
+eigentliche Aufruf einer Methode die Objektreferenz löschen und durch das Ergebnis
+ersetzen.)
+
+Damit die nächsten Instruktionen mit dem erwartetem Ergebnis auf dem Stack
+rechnen können muss anschließend nur noch ein Standard-Ergebnis
+auf den Stack geschrieben werden. Für die aktuelle Methode (\texttt{String.length()})
+bietet sich hierfür die Instruktion \texttt{ICONST\_0} an. Dies fügt ein int 0 dem Stack hinzu.
+
+\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+public void visitMethodInsn(...) {
+	Label fallback = new Label(); Label behind = new Label();
+
+	super.visitInsn(Opcodes.DUP);
+	super.visitJumpInsn(Opcodes.IFNULL, fallback);
+	super.visitMethodInsn(opcode, owner, name, desc);
+	super.visitJumpInsn(Opcodes.GOTO, behind);
+
+	super.visitLabel(fallback);
+	super.visitInsn(Opcodes.POP);
+	super.visitInsn(Opcodes.ICONST_0);
+	super.visitLabel(behind);
+}
+\end{lstlisting}
+\centerline{Listing 3.1: Erste Umsetzung einer automatischen Null-Prüfung mit ASM}
+
+\vspace{0.3cm}
 
 
-\footnote{Vgl. \href{https://github.com/jerolimov/java-hardener/blob/951f48194f53baebd0915c01e0ed3cc2596bd0db/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L43-66}{CheckNullMethodVisitor.java Zeile 43-66 rev 951f48...}}
+\subsection{Iteration 2: Verfielfältigung}
 
-\subsection{Version 2: Argumenten Problematik}
+Bei der zweiten Iteration\footnote{Vgl. Projektsourcen Rev 749111 - \href{https://github.com/jerolimov/java-hardener/blob/749111f5dcc3f71a1d1db5a669591288245e912b/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L42-131}{CheckNullMethodVisitor.java Zeile 42-131}}
+wurde versucht dieses Vorgehen auch auf andere Methoden anzuwenden und die
+jeweiligen Unterschiede zu beleuchten.
 
-\footnote{Vgl. \href{https://github.com/jerolimov/java-hardener/blob/749111f5dcc3f71a1d1db5a669591288245e912b/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L42-131}{CheckNullMethodVisitor.java Zeile 42-131 rev 749111...}}
+Problematisch dabei ist die Reihenfolge des Stacks für den jeweiligen Methodenaufruf.
+So liegen auf oberster Position die Argumente und erst \"unter diesem\" die eigentliche
+Referenz auf das Objekt wessen Methode aufgerufen werden soll. Um die Objektreferenz
+einer \texttt{NULL}-Prüfung mit \texttt{IFNULL} unterzuziehen zu können muss
+jedoch diese jedoch oben auf dem Stack aufliegen.
 
-\subsection{Version 3: Argumenten Problematik}
+Für Methoden mit nur einem Argument konnte dies noch einfach über das Hintereinander
+schalten der beiden Intruktionen \texttt{DUP2} sowie \texttt{POP} sein.
+Während der erste Befehl (bei nur einem Argument) die Referenz des Objektes und des Arguments
+kopiert, wird die des Arguments anschließend wider entfernt.
 
-\footnote{Vgl. \href{https://github.com/jerolimov/java-hardener/blob/c6e6bdc7d081eae5e47d2c926073aa3715d908f6/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L42-169}{CheckNullMethodVisitor.java Zeile 42-169 rev c6e6bd...}}
+Für eine Beispielhafte Implementierung für die Methode \texttt{java.lang.Map.get(Object)}
+muss schließlich nicht nur eine Referenz sondern ebenfalls zwei Referenzen vom
+Stack gegen eine NULL-Referenz (anstatt eines int 0) ersetzt werden (Vgl. Listing 3.2).
+
+\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+super.visitInsn(Opcodes.DUP2);
+super.visitInsn(Opcodes.POP);
+[...]
+super.visitInsn(Opcodes.POP2);
+super.visitInsn(Opcodes.ACONST_NULL);
+\end{lstlisting}
+\centerline{Listing 3.2: Auszug für eine automatischen Null-Prüfung mit einem Argument}
+
+\vspace{0.3cm}
+
+Dieser Mechanismus funktioniert jedoch nur Argumente mit maximal einem Parameter.
+Gleichzeitig darf dieser Parameter weder ein \texttt{long} noch ein \texttt{double} sein,
+da die \texttt{DUP2} Instruktion den Stack bit-orientiert kopiert\footnote{Vgl. http://en.wikipedia.org/wiki/Java\_bytecode\_instruction\_listings}.
+
+\subsection{Iteration 3: Generalisierung}
+
+\footnote{Vgl. Projektsourcen Rev c6e6bd - \href{https://github.com/jerolimov/java-hardener/blob/c6e6bdc7d081eae5e47d2c926073aa3715d908f6/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L42-169}{CheckNullMethodVisitor.java Zeile 42-169}}
 
 \subsection{StackSize und Labels}
 
