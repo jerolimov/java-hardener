@@ -25,13 +25,18 @@ package de.fhkoeln.gm.cui.javahardener;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.util.TraceClassVisitor;
 
+/**
+ * ClassLoader implementation which delegate each laaded class to the  
+ * {@link CheckNullClassVisitor} class so that the result is checked against
+ * NullPointerExceptions.
+ * 
+ * @author Christoph Jerolimov
+ */
 public class JHClassLoader extends ClassLoader {
 	@Override
 	public Class<?> loadClass(String name) throws ClassNotFoundException {

@@ -27,13 +27,26 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.util.Printer;
 
+/**
+ * This method visitor instance surrounds each method call with an IFNULL
+ * check. (Constrain: Works only for method with zero or one argument.)
+ * 
+ * @author Christoph Jerolimov
+ */
 public class CheckNullMethodVisitor extends MethodVisitor {
 	public CheckNullMethodVisitor(MethodVisitor visitor) {
 		super(Opcodes.ASM4, visitor);
 	}
 	
+	/**
+	 * Delegates the implementation dependend on the argument cound to
+	 * {@link #invokeMethodWithoutArguments(int, String, String, String)} or
+	 * {@link #invokeMethodWithOneArgument(int, String, String, String)}.
+	 * 
+	 * All other method calls will be handled by the original implementation
+	 * which just call the next visitor in the visitor chain.
+	 */
 	@Override
 	public void visitMethodInsn(int opcode, String owner, String name,
 			String desc) {
@@ -49,7 +62,7 @@ public class CheckNullMethodVisitor extends MethodVisitor {
 				// can handle with dup2 (works not if the argument is a long or double)
 				invokeMethodWithOneArgument(opcode, owner, name, desc);
 			} else {
-				System.out.println(Printer.OPCODES[opcode] + "\tUnsupported method: " + owner + "." + name + " " + desc);
+				//System.out.println(Printer.OPCODES[opcode] + "\tUnsupported method: " + owner + "." + name + " " + desc);
 				super.visitMethodInsn(opcode, owner, name, desc);
 			}
 			

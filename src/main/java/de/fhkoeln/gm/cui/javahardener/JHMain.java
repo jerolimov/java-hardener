@@ -26,6 +26,13 @@ package de.fhkoeln.gm.cui.javahardener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+/**
+ * Small demo client to runs a java programm with the JHClassLoader.
+ * Requires a combined classpath with JH and the final program. Runs the first
+ * argument classname main method with all other arguments as arg-Array.
+ * 
+ * @author Christoph Jerolimov
+ */
 public class JHMain {
 	public static void main(String[] args) throws Throwable {
 		//System.out.println("SystemClassLoader: " + ClassLoader.getSystemClassLoader());

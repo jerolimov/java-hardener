@@ -27,11 +27,20 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+/**
+ * This methods matches the ClassReader accept method and only a new
+ * {@link CheckNullMethodVisitor} instance for each method visit.
+ * 
+ * @author Christoph Jerolimov
+ */
 public class CheckNullClassVisitor extends ClassVisitor {
 	public CheckNullClassVisitor(ClassVisitor visitor) {
 		super(Opcodes.ASM4, visitor);
 	}
 	
+	/**
+	 * Create a new {@link CheckNullMethodVisitor} instance for each call.
+	 */
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc,
 			String signature, String[] exceptions) {
