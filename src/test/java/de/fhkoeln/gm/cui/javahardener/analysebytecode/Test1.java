@@ -28,7 +28,7 @@ import java.util.Map;
 
 public class Test1 {
 	public static void main(String[] args) {
-		Map<String, String> map = new LinkedHashMap<>();
+		Map<String, String> map = new LinkedHashMap<String, String>();
 		String entry = map.get("key");
 		System.out.println(entry.length());
 	}

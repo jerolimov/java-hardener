@@ -55,7 +55,7 @@ public class Test1ClassLoaderTest {
 	
 	@Test
 	public void testWithDefaultClassLoader() {
-		Map<String, String> map = new LinkedHashMap<>();
+		Map<String, String> map = new LinkedHashMap<String, String>();
 		map.put("key", "value");
 		
 		Test1 test1 = new Test1();
@@ -70,7 +70,7 @@ public class Test1ClassLoaderTest {
 	
 	@Test(expected = NullPointerException.class)
 	public void testNoKeyWithDefaultClassLoader() {
-		Map<String, String> map = new LinkedHashMap<>();
+		Map<String, String> map = new LinkedHashMap<String, String>();
 		map.put("key", "value");
 		
 		Test1 test1 = new Test1();
@@ -79,7 +79,7 @@ public class Test1ClassLoaderTest {
 	
 	@Test(expected = NullPointerException.class)
 	public void testIncorrectKeyWithDefaultClassLoader() {
-		Map<String, String> map = new LinkedHashMap<>();
+		Map<String, String> map = new LinkedHashMap<String, String>();
 		map.put("key", "value");
 		
 		Test1 test1 = new Test1();
@@ -88,7 +88,7 @@ public class Test1ClassLoaderTest {
 	
 	@Test
 	public void testWithJHClassLoader() throws Exception {
-		Map<String, String> map = new LinkedHashMap<>();
+		Map<String, String> map = new LinkedHashMap<String, String>();
 		map.put("key", "value");
 		
 		Object test1 = test1Class.newInstance();
@@ -103,7 +103,7 @@ public class Test1ClassLoaderTest {
 	
 	@Test
 	public void testNoKeyWithJHClassLoader() throws Exception {
-		Map<String, String> map = new LinkedHashMap<>();
+		Map<String, String> map = new LinkedHashMap<String, String>();
 		map.put("key", "value");
 		
 		Object test1 = test1Class.newInstance();
@@ -112,7 +112,7 @@ public class Test1ClassLoaderTest {
 	
 	@Test
 	public void testIncorrectKeyWithJHClassLoader() throws Exception {
-		Map<String, String> map = new LinkedHashMap<>();
+		Map<String, String> map = new LinkedHashMap<String, String>();
 		map.put("key", "value");
 		
 		Object test1 = test1Class.newInstance();

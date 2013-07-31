@@ -59,9 +59,9 @@ public class Test2ClassLoaderTest {
 	
 	@Test
 	public void testWithDefaultClassLoader() {
-		Deque<Boolean> entries = new LinkedList<>();
+		Deque<Boolean> entries = new LinkedList<Boolean>();
 		entries.add(true);
-		Map<String, Deque<Boolean>> map = new LinkedHashMap<>();
+		Map<String, Deque<Boolean>> map = new LinkedHashMap<String, Deque<Boolean>>();
 		map.put("key", entries);
 		
 		Test2 test2 = new Test2();
@@ -76,7 +76,7 @@ public class Test2ClassLoaderTest {
 
 	@Test(expected = NoSuchElementException.class)
 	public void testNoEntriesWithDefaultClassLoader() {
-		Map<String, Deque<Boolean>> map = new LinkedHashMap<>();
+		Map<String, Deque<Boolean>> map = new LinkedHashMap<String, Deque<Boolean>>();
 		map.put("key", new LinkedList<Boolean>());
 		
 		Test2 test2 = new Test2();
@@ -85,9 +85,9 @@ public class Test2ClassLoaderTest {
 	
 	@Test
 	public void testWithJHClassLoader() throws Exception {
-		Deque<Boolean> entries = new LinkedList<>();
+		Deque<Boolean> entries = new LinkedList<Boolean>();
 		entries.add(true);
-		Map<String, Deque<Boolean>> map = new LinkedHashMap<>();
+		Map<String, Deque<Boolean>> map = new LinkedHashMap<String, Deque<Boolean>>();
 		map.put("key", entries);
 		
 		Object test2 = test2Class.newInstance();
@@ -102,7 +102,7 @@ public class Test2ClassLoaderTest {
 
 	@Test(expected = InvocationTargetException.class)
 	public void testNoEntriesWithJHClassLoader() throws Exception {
-		Map<String, Deque<Boolean>> map = new LinkedHashMap<>();
+		Map<String, Deque<Boolean>> map = new LinkedHashMap<String, Deque<Boolean>>();
 		map.put("key", new LinkedList<Boolean>());
 		
 		Object test2 = test2Class.newInstance();

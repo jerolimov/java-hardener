@@ -26,9 +26,10 @@ package de.fhkoeln.gm.cui.javahardener.analysebytecode;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class Test0 {
 	public static void main(String[] args) {
-		Map<String, String> map = new LinkedHashMap<>();
+		Map<String, String> map = new LinkedHashMap<String, String>();
 		String entry = map.get("key");
 		System.out.println(0);
 	}

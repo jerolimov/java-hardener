@@ -72,13 +72,13 @@ public class Test3ClassLoaderTest {
 		
 		test3DelegateReturnVoidMethod.invoke(test3Delegate);
 		Assert.assertEquals(true, test3DelegateReturnBooleanMethod.invoke(test3Delegate));
-		Assert.assertEquals((byte) 1, (byte) test3DelegateReturnByteMethod.invoke(test3Delegate));
-		Assert.assertEquals((char) 1, (char) test3DelegateReturnCharMethod.invoke(test3Delegate));
-		Assert.assertEquals((short) 1, (short) test3DelegateReturnShortMethod.invoke(test3Delegate));
-		Assert.assertEquals((int) 1, (int) test3DelegateReturnIntMethod.invoke(test3Delegate));
-		Assert.assertEquals((float) 1, (float) test3DelegateReturnFloatMethod.invoke(test3Delegate), (float) 0);
-		Assert.assertEquals((long) 1, (long) test3DelegateReturnLongMethod.invoke(test3Delegate));
-		Assert.assertEquals((double) 1, (double) test3DelegateReturnDoubleMethod.invoke(test3Delegate), (double) 0);
+		Assert.assertEquals((byte) 1, test3DelegateReturnByteMethod.invoke(test3Delegate));
+		Assert.assertEquals((char) 1, test3DelegateReturnCharMethod.invoke(test3Delegate));
+		Assert.assertEquals((short) 1, test3DelegateReturnShortMethod.invoke(test3Delegate));
+		Assert.assertEquals((int) 1, test3DelegateReturnIntMethod.invoke(test3Delegate));
+		Assert.assertEquals((float) 1, (Float) test3DelegateReturnFloatMethod.invoke(test3Delegate), (float) 0);
+		Assert.assertEquals((long) 1, test3DelegateReturnLongMethod.invoke(test3Delegate));
+		Assert.assertEquals((double) 1, (Double) test3DelegateReturnDoubleMethod.invoke(test3Delegate), (double) 0);
 		Assert.assertNotNull(test3DelegateReturnObjectMethod.invoke(test3Delegate));
 	}
 	
@@ -89,13 +89,13 @@ public class Test3ClassLoaderTest {
 		
 		test3DelegateReturnVoidMethod.invoke(test3Delegate);
 		Assert.assertEquals(false, test3DelegateReturnBooleanMethod.invoke(test3Delegate));
-		Assert.assertEquals((byte) 0, (byte) test3DelegateReturnByteMethod.invoke(test3Delegate));
-		Assert.assertEquals((char) 0, (char) test3DelegateReturnCharMethod.invoke(test3Delegate));
-		Assert.assertEquals((short) 0, (short) test3DelegateReturnShortMethod.invoke(test3Delegate));
-		Assert.assertEquals((int) 0, (int) test3DelegateReturnIntMethod.invoke(test3Delegate));
-		Assert.assertEquals((float) 0, (float) test3DelegateReturnFloatMethod.invoke(test3Delegate), (float) 0);
-		Assert.assertEquals((long) 0, (long) test3DelegateReturnLongMethod.invoke(test3Delegate));
-		Assert.assertEquals((double) 0, (double) test3DelegateReturnDoubleMethod.invoke(test3Delegate), (double) 0);
+		Assert.assertEquals((byte) 0, test3DelegateReturnByteMethod.invoke(test3Delegate));
+		Assert.assertEquals((char) 0, test3DelegateReturnCharMethod.invoke(test3Delegate));
+		Assert.assertEquals((short) 0, test3DelegateReturnShortMethod.invoke(test3Delegate));
+		Assert.assertEquals((int) 0, test3DelegateReturnIntMethod.invoke(test3Delegate));
+		Assert.assertEquals((float) 0, (Float) test3DelegateReturnFloatMethod.invoke(test3Delegate), (float) 0);
+		Assert.assertEquals((long) 0, test3DelegateReturnLongMethod.invoke(test3Delegate));
+		Assert.assertEquals((double) 0, (Double) test3DelegateReturnDoubleMethod.invoke(test3Delegate), (double) 0);
 		Assert.assertNull(test3DelegateReturnObjectMethod.invoke(test3Delegate));
 	}
 }
