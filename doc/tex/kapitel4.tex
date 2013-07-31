@@ -1,5 +1,19 @@
 %!TEX root = ../Dokumentation.tex
 
-\chapter{Kapitel 4}
+\chapter{Erweiterungsmöglichkeiten}
 
-TODO
+\section{Möglichkeite Laufzeitprobleme}
+
+%\subsection{Optimierungsmöglichkeiten}
+
+\begin{itemize}
+\item Kann man das ggf. Erkennen (vgl. Optimierung \texttt{Integer.valueOf()})?
+\item Was ist wenn dies Eingebunden in Schleifen ist?
+\item Was ist wenn sie mehrmals hintereinander aufgerufen wird?
+\item Wenn Variable zuletzt gesetzt wurde ist mit new, kann sie nicht null sein.
+\item Wenn Variable zuletzt gesetzt wurde mit einem "String" oder einem primitiven Typen, kann sie nicht null sein.
+\item Nicht für \texttt{System.[in,out,err].*}-Aufrufe.
+\item Nicht wenn Ergebnis von \texttt{Integer.valueOf()}, \texttt{Integer.toString()}, etc.
+\item Nicht wenn Feld \texttt{final} ist
+\end{itemize}
+

@@ -1,5 +1,87 @@
 %!TEX root = ../Dokumentation.tex
 
-\chapter{Kapitel 3}
+\chapter{Umsetzung}
 
-TODO
+\begin{itemize}
+\item Analyse / Einarbeitung
+\item Bytecode
+\item ASM
+\item Eclipse Plugin das asm befehle anzeigt verwenden?
+\item Statistiken ausgeben
+\item Anaylse Umsetzungsmöglichkeiten (aus \texttt{variable.doAnything()} wird z.b.)
+\item Springmarke mit \texttt{label} / \texttt{goto}?
+\item Stack size anpassen?
+\item Labels anpassem
+\item Toolchain
+\item Shell-Script das Class-Dateien bearbeitet.
+\item Classloader schreiben?
+\item Ein kleines Shell-Script welches den Classloader setzt (für bestimmte Klassen?
+\item zB \texttt{javahardener -Dharden=methodcalls -cp … Main}?
+\item oder \texttt{jarh -Dharden=methodcalls beispiel.jar}?
+\end{itemize}
+
+\section{ASM}
+
+\subsection{Dependencies}
+
+\begin{itemize}
+\item asm-4.x.jar
+\item hamcrest-core-1.x.jar (for asm)
+\item junit-4.x.jar
+\end{itemize}
+
+\subsection{Maven}
+
+Dependencies and the IDE configuration files are not part of the git repository.
+To download them use the maven plugin of your IDE or one of these commands:
+
+Use your IDE maven-plugins to import the projects or configure your project
+with one of these maven 2+ (tested with maven 3.1) commands:
+
+\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+	mvn eclipse:clean eclipse:eclipse -DdownloadSources
+	mvn idea:clean idea:eclipse
+\end{lstlisting}
+\centerline{Listing 4.2: Beispiel für eine XMPP-PubSub-Nachricht ohne Absender-Verifizierung}
+
+Supported maven 2+ (tested with maven 3) commands:
+
+\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+	mvn compile # download the dependencies and compile the sources
+	mvn package # compiles, test and package the java-hardener sources
+\end{lstlisting}
+\centerline{Listing 4.2: Beispiel für eine XMPP-PubSub-Nachricht ohne Absender-Verifizierung}
+
+\vspace{0.3cm}
+
+
+\subsection{Visitor Pattern}
+
+Siehe asm
+
+\subsection{Tree / DOM API}
+
+Siehe asm-tree
+
+\section{ClassLoader}
+
+Siehe JHClassLoader, CheckNullClassVisitor und CheckNullMethodVisitor.
+
+It shall use the ASM (Vgl. http://asm.ow2.org/) bytecode manipulation and analysis framework
+and will be implemented as a bytecode-to-bytecode post-processor and maybe also as java \texttt{ClassLoader}.
+
+
+\section{IFNULL Bytecode manipulation}
+
+Version 1: https://github.com/jerolimov/java-hardener/blob/951f48194f53baebd0915c01e0ed3cc2596bd0db/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L43-66
+
+Version 2: https://github.com/jerolimov/java-hardener/blob/749111f5dcc3f71a1d1db5a669591288245e912b/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L42-131
+
+Version 3: https://github.com/jerolimov/java-hardener/blob/c6e6bdc7d081eae5e47d2c926073aa3715d908f6/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L42-169
+
+
+
+
+
+
+

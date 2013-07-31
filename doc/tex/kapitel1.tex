@@ -2,4 +2,44 @@
 
 \chapter{Die Idee}
 
-TODO
+\texttt{NullPointerException}s (NPE) sind ein klassisches Problem der Softwareentwicklung
+und treten in der Programmiersprache Java auf wenn Methoden- oder Attribut-Zugriffe
+auf \texttt{null}-Object erfolgen\footnote{Dadrüber hinaus kann eine NPE auch
+noch in anderen Fällen geworfen werden. Vgl. http://www.java-blog-buch.de/0503-nullpointerexception/}.
+
+Die Behandlung solcher ungültiger Aufrufe ist grundsätzlich abhängig von der
+Programmiersprache und der Laufzeitumgebung. So können entsprechende Zugriffe
+zum Absturz des Programms führen, wie in Java zum werfen einer entsprechender
+Ausnahme oder, wie etwa in Objective-C\footnote{Vgl. http://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/}, ignoriert werden.
+
+Diese fehlertolerantere Version von Objective-C soll hier nachgebildet werden
+und durch eine automatisierte manipulation des Java-Bytecodes erreicht werden.
+Wie in der Vorlage müssen entsprechende Methoden immer einen Rückgabewert liefern,
+hier werden, analog zu Objective-C, möglichst neutrale Werte gewählt:
+False für boolsche Ausdrücke, Null für Zahlen und NULL-Referenzen für Objekte
+
+Die beiden folgenden zwei Anwendungsfälle (vgl. Listing 1.1 und 1.2) verdeutlichen
+die Einfachheit für den Programmier und würden ohne Bytecode-Manipulation
+zu NullPointerExceptions führen.
+
+\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+List nullList = null;
+System.out.println("List size: " + nullList.size());
+\end{lstlisting}
+\centerline{Listing 1.1: Beispiel für einen Null-Zugriff mit erwartetem Integer-Ergebnis}
+
+\vspace{0.3cm}
+
+\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+List nullList = null;
+if (!nullList.isEmpty()) {
+	// Will run this code also if the nullList is null...
+}
+\end{lstlisting}
+\centerline{Listing 1.2: Beispiel für einen Null-Zugriff mit erwartetem Boolean-Ergebnis}
+
+\vspace{0.3cm}
+
+Für die Umsetzung bietet sich die ASM\footnote{Vgl. http://asm.ow2.org/} Bibliothek
+an welche für das manipulieren von Java-Bytecodes verschiedene technische Möglichkeiten an,
+diese werden im folgendem Untersucht und deren prototypische Umsetzung beschrieben wird.

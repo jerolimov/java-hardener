@@ -1,5 +1,95 @@
 %!TEX root = ../Dokumentation.tex
 
-\chapter{Kapitel 2}
+\chapter{Analyse}
 
-TODO
+%Um die Komplexität abschätzen zu können bedarf es der Vorherigen Analyse
+%möglicher Anwendungsfälle oder Probleme.
+
+\section{Problemstellung}
+
+Wie in der Einführung beschrieben, können Objectaufrufe, z.B. durch
+Methoden- und Variablenaufrufe (lesend und schreibend), auf \texttt{NULL}
+durch vorheriges Prüfen gesichert werden.
+Auch andere Fälle, etwa der Zugriff auf Arrays (\texttt{[index]}-Zugriff oder \texttt{.length}) kann
+zu NPE-Ausnahmefehlern führen. Nicht alle diese Anwendungsfälle werden
+in diesem Prototypem umgesetzt sollen aber wenigstens in dieser Einführung angesprochen werden.
+
+Problematisch sind insbesondere verkettete Aufrufe (vgl. Listing 2.1).
+So müssen die zwischen Ergebnisse etwa in lokalen Variablen gespeichert werden (vgl. Listing 2.2)
+oder die Aufrufe wiederholt werden wenn diese in umgebende Bedingungen einzubauen (vgl. Listing 2.3).
+Letzteres würde jedoch nicht nur die Performance negativ beeinflussen, sondern
+könnte bei inmutablen Zugriffen auch zu Fehlerhaften Programmabläufen führen.
+
+\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+Deque<Map<String, Integer>> example = null;
+int size = example.getFirst().get("size");
+\end{lstlisting}
+\centerline{Listing 2.1: Beispiel für verkette Aufrufe}
+
+\vspace{0.3cm}
+
+\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+Deque<Map<String, Integer>> example = null;
+Map v1 = example.getFirst();
+Integer v2 = v1.getSize("size");
+int size = v2 != null ? v2.intValue() : 0;
+\end{lstlisting}
+\centerline{Listing 2.2: Umwandlung verketteter Aufrufe in lokale Variablen}
+
+\vspace{0.3cm}
+
+\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+Deque<Map<String, Integer>> example = null;
+int size = 0;
+if (example != null &&
+	example.getFirst() != null &&
+	example.getFirst().get("size") != null) {
+	size = example.getFirst().get("size");
+}
+\end{lstlisting}
+\centerline{Listing 2.3: Verkettete Aufrufe umfasst mit NULL-Prüfungen}
+
+\vspace{0.3cm}
+
+Autoboxing bezeichnet die mit Java 1.5 eingeführte automatische Umwandlung zwischen
+primitiver Datentypen sowie deren Wrapper-Typen. Diese implizite Umwandlung wird
+durch zusätzliche Methodenaufrufe durch den Compiler eingewebt und ist für den
+Java-Interpreter nicht von normalen Aufrufen zu unterscheiden.
+
+Für die manipulation des Bytecodes zur Verbesserung der Fehlertoleranz sollte
+dies ebenfalls keinen Unterschied bieten.
+
+
+\section{Bytecode-Analyse}
+
+Die folgenden SHELL SCRIPT....
+
+
+
+\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+package de.fhkoeln.gm.cui.javahardener.testcases;
+public class Test1 {
+	public int getStringLength(Map<String, String> map, String key) {
+		return map.get(key).length();
+	}
+}
+\end{lstlisting}
+\centerline{Listing 2.4: Beispiel Sourcecode mit Null-Prüfung}
+
+
+\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+public class de/fhkoeln/gm/cui/javahardener/testcases/Test1 {
+  public getStringLength(Ljava/util/Map;Ljava/lang/String;)I
+    ALOAD 1
+    ALOAD 2
+    INVOKEINTERFACE java/util/Map.get (Ljava/lang/Object;)Ljava/lang/Object;
+    CHECKCAST java/lang/String
+    INVOKEVIRTUAL java/lang/String.length ()I
+    IRETURN
+    MAXSTACK = 2
+    MAXLOCALS = 3
+}
+\end{lstlisting}
+\centerline{Listing 2.5: Auszug ASM Assembler-Ausgabe für Listing 2.4}
+
+
