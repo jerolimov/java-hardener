@@ -102,7 +102,7 @@ auch die Debug-Möglichkeiten im Kapitel Umsetzung ClassLoader.
 \subsection{Iteration 1: Grundsätzliches Vorgehen}
 
 Die erste prototische Umsetzung\footnote{Vgl. Projektsourcen - Rev 951f48 \href{https://github.com/jerolimov/java-hardener/blob/951f48194f53baebd0915c01e0ed3cc2596bd0db/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L43-66}{CheckNullMethodVisitor.java Zeile 43-66}} der Klasse \texttt{CheckNullMethodVisitor} behandelte Ausschließlich
-den Methodenaufruf \texttt{java.lang,String.length()}. Alle anderen Aufrufe wurden
+den Methodenaufruf \texttt{String.length()}. Alle anderen Aufrufe wurden
 in dieser Version nicht beachtet. Für die Null-Prüfung wurde der Original Aufruf
 in eine Bedingung mit Sprungbefehlen gekapselt.
 
@@ -168,7 +168,7 @@ schalten der beiden Intruktionen \texttt{DUP2} sowie \texttt{POP} sein.
 Während der erste Befehl (bei nur einem Argument) die Referenz des Objektes und des Arguments
 kopiert, wird die des Arguments anschließend wider entfernt.
 
-Für eine Beispielhafte Implementierung für die Methode \texttt{java.lang.Map.get(Object)}
+Für eine Beispielhafte Implementierung für die Methode \texttt{Map.get(Object)}
 muss schließlich nicht nur eine Referenz sondern ebenfalls zwei Referenzen vom
 Stack gegen eine NULL-Referenz (anstatt eines int 0) ersetzt werden (Vgl. Listing 3.2).
 
@@ -189,15 +189,90 @@ da die \texttt{DUP2} Instruktion den Stack bit-orientiert kopiert\footnote{Vgl. 
 
 \subsection{Iteration 3: Generalisierung}
 
-\footnote{Vgl. Projektsourcen Rev c6e6bd - \href{https://github.com/jerolimov/java-hardener/blob/c6e6bdc7d081eae5e47d2c926073aa3715d908f6/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L42-169}{CheckNullMethodVisitor.java Zeile 42-169}}
+Mit der dritten Iteration\footnote{Vgl. Projektsourcen Rev c6e6bd - \href{https://github.com/jerolimov/java-hardener/blob/c6e6bdc7d081eae5e47d2c926073aa3715d908f6/src/main/java/de/fhkoeln/gm/cui/javahardener/CheckNullMethodVisitor.java\#L42-169}{CheckNullMethodVisitor.java Zeile 42-169}}
+wurden schließlich die Sonderbehandlungen für \texttt{String.length()} und
+\texttt{Map.get(Object)} gegen eine allgemeingültigere Implementierung ersetzt.
+Entsprechend der vorhergenannten Einschränkungen können aktuell nur Methoden ohne
+bzw. maximal einem Argument so manipuliert werden das es zu keiner NPE kommen kann
+(vgl. Listing 3.3).
+
+Über den Rückgabetyp der Funktion kann zusätzlich erkannt werden von
+welchem Typ ein entsprechender Eintrag auf dem Stack sein muss.
+Auch wenn dieser Unterschied zur Laufzeit vermutlich keine Relevanz hat
+wird bei laden der Klasse der Bytecode auf innere Korrektheit geprüft
+was den korrekten Datentyp erforderte (vgl. Listing 3.4).
+
+\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+Type type = Type.getType(desc);
+int argumentCount = type.getArgumentTypes().length;
+int argumentSize = type.getArgumentTypes()[0].getSize();
+
+if (argumentCount == 0) {
+	invokeMethodWithoutArguments(opcode, owner, name, desc);
+} else if (argumentCount == 1 && argumentSize < 2) {
+	invokeMethodWithOneArgument(opcode, owner, name, desc);
+} else {
+	super.visitMethodInsn(opcode, owner, name, desc);
+}
+\end{lstlisting}
+\centerline{Listing 3.3: Einschränkung der manipulierbaren Methodenaufrufe}
+
+\vspace{0.3cm}
+
+
+\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+private void pushDefault(Type type) {
+	switch (type.getSort()) {
+	case Type.VOID: break;
+	case Type.BOOLEAN: super.visitIntInsn(Opcodes.BIPUSH, 0); break;
+	case Type.INT: super.visitInsn(Opcodes.ICONST_0); break;
+	[...]
+	default: super.visitInsn(Opcodes.ACONST_NULL); break;
+	}
+}
+\end{lstlisting}
+\centerline{Listing 3.4: Typabhängiges setzen von Defaultwerten auf den Stack}
+
+\vspace{0.3cm}
+
 
 \subsection{StackSize und Labels}
 
-TODO
+Die maximale Stacksize kann surch durch dieses Vorgehen ändern und sollte
+im ungünstigsten Fall \emph{1 x Anzahl Methoden ohne Argumente +}
+\emph{2 x Anzahl Methoden mit einem Argument} größer werden.
+Dieser unwahrscheinliche Fall tritt jedoch nur auf wenn alle Methoden
+Ergebnisse (ohne Lokale Zwischenspeicherung in Variablen) aufeinander aufbauen.
+
+Zur Optimierung innerhalb der Java-Laufzeitumgebung beinhalten Methoden
+die Informationen wieviele elemente sich maximal auf dem Stack befinden können.
+Diese Variable (\texttt{MAXSTACK =} \emph{n}) muss entsprechend der oben
+gekannten Berechnungen angepasst werden.
+
+Durch das setzen des \texttt{ClassWriter.COMPUTE\_MAXS} flags beim erzeugen
+einer \texttt{ClassWriter} Instanz kann die ASM Bibliothek diese Berechnung
+übernehmen. Da der Java-Bytecode beim laden entsprechende Konsistenz-Prüfungen 
+vornimmt ist es drigend erforderlich das dieses erneute Berechnung stattfinden.
+
 
 \section{Umsetzung ClassLoader}
 
-Siehe JHClassLoader
+Die ClassLoader-Implementierung \texttt{JHClassLoader} lädt die nötigen Resourcen
+von ihrem Parent-ClassLoader und manipuliert den erhaltenen Bytecode-Datenstrom
+mithilfe der oben beschriebenen \texttt{CheckNullClassVisitor} Implementierung.
 
-TODO debug
+Durch passendes Zusammenstecken der ClassVisitor-chain kann der gegebene
+Bytecode-Datenstrom bzw. das manipulierte Bytecode-Ergebnis mithilfe der
+Klasse \texttt{TraceClassVisitor} auch ausgegeben werden.
+
+
+\section{TODO}
+
+
+\begin{itemize}
+\item Shell-Script das Class-Dateien bearbeitet.
+\item Ein kleines Shell-Script welches den Classloader setzt (für bestimmte Klassen?
+\item zB \texttt{javahardener -Dharden=methodcalls -cp … Main}?
+\item oder \texttt{jarh -Dharden=methodcalls beispiel.jar}?
+\end{itemize}
 

@@ -69,16 +69,15 @@ Java-File die in 2.5 angegebene Ausgabe erzeugt.
 
 Der Aufruf erfolgt über den Scriptnamen gefolgt von einer Java-Bytecode-Datei:
 
-\texttt{./textifier target/test-classes/de/fhkoeln/gm/cui/javahardener/testcases/Test1.class}
+\texttt{./textifier target/test-classes/de/.../testcases/Test1.class}
 
 
 \subsection{Ausgangsbasis}
 
 \begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
-package de.fhkoeln.gm.cui.javahardener.testcases;
 public class Test1 {
-	public int getStringLength(Map<String, String> map, String key) {
-		return map.get(key).length();
+	public int getStringLength(Map map, String key) {
+		return ((String) map.get(key)).length();
 	}
 }
 \end{lstlisting}
@@ -89,12 +88,12 @@ public class Test1 {
 
 \begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
 public class de/fhkoeln/gm/cui/javahardener/testcases/Test1 {
-  public getStringLength(Ljava/util/Map;Ljava/lang/String;)I
+  public getStringLength(Ljava/util/Map;LString;)I
     ALOAD 1
     ALOAD 2
-    INVOKEINTERFACE java/util/Map.get (Ljava/lang/Object;)Ljava/lang/Object;
-    CHECKCAST java/lang/String
-    INVOKEVIRTUAL java/lang/String.length ()I
+    INVOKEINTERFACE java/util/Map.get (LObject;)LObject;
+    CHECKCAST String
+    INVOKEVIRTUAL String.length ()I
     IRETURN
     MAXSTACK = 2
     MAXLOCALS = 3
@@ -104,16 +103,17 @@ public class de/fhkoeln/gm/cui/javahardener/testcases/Test1 {
 
 \vspace{0.3cm}
 
-
 Im folgenden sollen die Unterschiede aufgezeiugt werden, wenn man diese ursprüngliche
 Version mit gegen NPE gesicherte Versionen vergleicht. Die dafür angelegten Klassen
-befinden sich im test-Ordner innerhalb des Java-Packages
-\texttt{de.fhkoeln.gm.cui.javahardener.analysebytecode}.
+befinden sich im test-Ordner innerhalb des Java-Packages \texttt{analysebytecode}.
+
+\vspace{0.3cm}
+
 
 \subsection{Bedingungsoperator ?:}
 
-Durch die Null-Prüfung mit einem Bedingungsoperator
-(etwa \texttt{entry != null ? entry.toString() : null})
+Durch eine \texttt{NULL}-Prüfung mit einem Bedingungsoperator
+(etwa \texttt{e != null ? e.toString() : null})
 fügt der Compiler zwei Labels (Ziele für Springmarken) ein und prüft
 anschließend die aktuell auf dem Stack liegende entry Variable (vgl. Listing 2.6 Zeile 1)
 auf null (Z. 2). Ergebnis die \texttt{NULL}-Prüfung wahr springt die Ausführung
@@ -127,7 +127,7 @@ dieser mithilfe eines \texttt{GOTO}s (hier zur Sprungmarke L1) übersprungen.
     ALOAD 2 /* entry */
     IFNULL L0
     ALOAD 2 /* entry */
-    INVOKEVIRTUAL java/lang/String.toString ()Ljava/lang/String;
+    INVOKEVIRTUAL String.toString ()LString;
     GOTO L1
    L0
     ACONST_NULL
@@ -145,21 +145,31 @@ try-catch Mechanismus behandeln zu lassen und einen entsprechenden Block um
 den möglicherweise zu fehlern führenden Aufruf zu erstellen.
 
 Für dieses Vorgehen wird eine zusätzliche lokale Variable benötigt,
-welche im Fehlerfall mit einem Defaultwert gefüllt wird:
+welche im Fehlerfall mit einem Defaultwert gefüllt wird (vgl. Listing 2.7).
 
-\texttt{int l; try { l = entry.length(); } catch (NPE e) { l = 0 }}
+\begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
+int l;
+try {
+	l = entry.length();
+} catch (NullPointerException e) {
+	l = 0;
+}
+\end{lstlisting}
+\centerline{Listing 2.7: Beispiel Null-Prüfung mit try-catch}
+
+\vspace{0.3cm}
 
 Der dadrauf entstehende Bytecode speichert das Ergebnis des Originalaufrufs
-in einer lokalen Variable (Listing 2.7 Zeile 4 und 5). Sollte es während
+in einer lokalen Variable (Listing 2.8 Zeile 4 und 5). Sollte es während
 dieses Aufrufs zu einer Fehlerbehandlung kommen wird diese Variable mit
 einer \texttt{NULL}-Referenz überschrieben (Zeile 10 und 11).
 
 
 \begin{lstlisting}[basicstyle=\ttfamily,numbers=left,numberstyle=\footnotesize\ttfamily,backgroundcolor=\color{source}]
-    TRYCATCHBLOCK L0 L1 L2 java/lang/NullPointerException
+    TRYCATCHBLOCK L0 L1 L2 NullPointerException
    L0
     ALOAD 2
-    INVOKEVIRTUAL java/lang/String.length ()I
+    INVOKEVIRTUAL String.length ()I
     ISTORE 3
    L1
     GOTO L3
@@ -169,7 +179,7 @@ einer \texttt{NULL}-Referenz überschrieben (Zeile 10 und 11).
     ISTORE 3
    L3
 \end{lstlisting}
-\centerline{Listing 2.7: Auszug ASM für Null-Prüfung mit try-catch}
+\centerline{Listing 2.8: Auszug ASM für Null-Prüfung mit try-catch}
 
 \vspace{0.3cm}
 
