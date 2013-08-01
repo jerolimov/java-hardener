@@ -15,4 +15,4 @@ CLASSPATH=$CLASSPATH:target/java-hardener-0.1.0-SNAPSHOT.jar
 CLASSPATH=$CLASSPATH:$M2_REPO/org/ow2/asm/asm/4.1/asm-4.1.jar
 CLASSPATH=$CLASSPATH:$M2_REPO/org/ow2/asm/asm-util/4.1/asm-util-4.1.jar
 
-java -cp $CLASSPATH de.fhkoeln.gm.cui.javahardener.JHMain $*
+java -cp $CLASSPATH de.fhkoeln.gm.cui.javahardener.JHRun $*

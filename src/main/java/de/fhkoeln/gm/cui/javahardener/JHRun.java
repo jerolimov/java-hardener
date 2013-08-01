@@ -33,7 +33,7 @@ import java.lang.reflect.Method;
  * 
  * @author Christoph Jerolimov
  */
-public class JHMain {
+public class JHRun {
 	public static void main(String[] args) throws Throwable {
 		//System.out.println("SystemClassLoader: " + ClassLoader.getSystemClassLoader());
 		if (args.length == 0) {

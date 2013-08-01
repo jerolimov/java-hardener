@@ -55,11 +55,22 @@ See `pom.xml` for required dependencies (only asm is needed at runtime).
 When you opened the project with your IDE or run the maven package process
 you can test java-hardener with the `src/test/java/Demo.java` class.
 
-* To run a programm with *activated NPE production*: Run `JHMain` and enter the test class as argument!
-  * From your IDE: `de.fhkoeln.gm.cui.javahardener.JHMain` `Demo`
-  * Or from the commandline: `./jhmain Demo`
-* To debug the result use `JHPrint` or `./jhprint` the same way.
-* To compile the file (to stdout!!) use `JHCompile` or `./jhcompile`.
+* To debug the result and show java assembler code use `JHPrint`.
+* To compile the file (to stdout!!) use `JHCompile`.
+* Use `JHRun` to run a programm with **activated NPE production**.
+
+You can run this classes also from the commandline with this small wrapper scripts:
+
+	# Debug
+	./jhprint target/test-classes/Demo.class   [or ./jhprint Demo]
+	
+	# Compile and run (Without ASM or java-hardener dependency!)
+	./jhcompile target/test-classes/Demo.class > Demo.class
+	java -cp . Demo
+	
+	# Run directly with JHClassLoader
+	./jhrun Demo
+
 
 ## Academic-project disclaimer (or „this is fun only“)
 
