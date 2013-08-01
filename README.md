@@ -12,28 +12,27 @@ elective subject provided by
 # Java-hardener
 
 Java-hardener makes java-bytecode (a little bit) more fault tolerant against `NullPointerExceptions`.
-It's inspired by the [Objective-C](http://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/)
-language which ignores signals (method calls) to nil-Objects.
 
-It shall use the [ASM](http://asm.ow2.org/) bytecode manipulation and analysis framework
-and will be implemented as a bytecode-to-bytecode post-processor and maybe also as java `ClassLoader`.
+It's inspired by [Objective-C](http://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/) which ignores signals (method calls) to nil-Objects.
 
 **Example:**
 
 	List nullList = null;
 	
 	System.out.println("List size: " + nullList.size());
-	// Should output "List size: 0"
+	// Output: "List size: 0"
 	
 	if (!nullList.isEmpty()) {
-		// Will run this code also if the nullList is null.
+		// Will run this code also if the nullList is null!
 	}
 
-## User introduction
+It's based on the bytecode manipulation framework [ASM 4](http://asm.ow2.org/).
+You can run the hardening mechanism over your compiled class-files (with a small bytecode to bytecode compiler)
+or integrate it as `ClassLoader` which modifies your code on-the-fly when it was loaded.
 
-* Come back later. See above. :-)
+## Getting started
 
-## Developer introduction
+### Prepare your IDE with Maven
 
 Dependencies and the IDE configuration files are not part of the git repository.
 To download them use the maven plugin of your IDE or one of these commands:
@@ -46,68 +45,34 @@ with one of these maven 2+ (tested with maven 3.1) commands:
 
 Supported maven 2+ (tested with maven 3) commands:
 
-	mvn compile # download the dependencies and compile the sources
-	mvn package # compiles, test and package the java-hardener sources
+	mvn compile   # download the dependencies and compile the sources
+	mvn package   # compiles, test and package the java-hardener sources
 
-Required dependencies:
+See `pom.xml` for required dependencies (only asm is needed at runtime).
 
-* asm-4.x.jar
-* hamcrest-core-1.x.jar (for asm)
-* junit-4.x.jar
+### Testing it
 
-## Brainstorming (DE)
+When you opened the project with your IDE or run the maven package process
+you can test java-hardener with the `src/test/java/Demo.java` class.
 
-TODO: Translate this
+* To run a programm with *activated NPE production*: Run `JHMain` and enter the test class as argument!
+  * From your IDE: `de.fhkoeln.gm.cui.javahardener.JHMain` `Demo`
+  * Or from the commandline: `./jhmain Demo`
+* To debug the result use `JHPrint` or `./jhprint` the same way.
+* To compile the file (to stdout!!) use `JHCompile` or `./jhcompile`.
 
-* Irgendwo anmerken das dies nicht für den Produktiveinsatz gedacht ist. :-)
-* Analyse / Einarbeitung
-  * Bytecode
-    * `invoke_method`
-    * `invoke_interface`
-    * `invoke_dynamic`???
-  * ASM
-  * Eclipse Plugin das asm befehle anzeigt verwenden?
-* Analyse der möglichen Problemfälle
-  * Methodenaufrufe auf null-Objekte.
-  * Variablenaufrufe (setzen oder laden) auf null-Objekte.
-  * length-Anfragen auf null-Arrays.
-  * Was ist mit verketteten Befehle?
-  * Autoboxing sind im bytecode ja normale Aufrufe.. Trotzdem irgendwas beachten? Kann man das ggf. Erkennen (vgl. Optimierung `Integer.valueOf()`)?
-* Optimierungsmöglichkeit:
-  * Was ist wenn dies Eingebunden in Schleifen ist?
-  * Was ist wenn sie mehrmals hintereinander aufgerufen wird?
-  * Wenn Variable zuletzt gesetzt wurde ist mit new, kann sie nicht null sein.
-  * Wenn Variable zuletzt gesetzt wurde mit einem "String" oder einem primitiven Typen, kann sie nicht null sein.
-  * Nicht für `System.[in,out,err].*`-Aufrufe.
-  * Nicht wenn Ergebnis von `Integer.valueOf()`, `Integer.toString()`, etc.
-  * Nicht wenn Feld `final` ist?
-* Statistiken ausgeben
-* Anaylse Umsetzungsmöglichkeiten (aus `variable.doAnything()` wird z.b.)
-  * `if (variable != null) variable.doAnything()`
-  * `variable != null && variable.doAnything()`
-  * Springmarke mit `label` / `goto`?
-* Weitere analyse möglicher Probleme:
-  * Stack size anpassen?
-  * Labels anpassem
-* Toolchain
-  * Shell-Script das Class-Dateien bearbeitet.
-  * Classloader schreiben?
-  * Ein kleines Shell-Script welches den Classloader setzt (für bestimmte Klassen?
-    * zB `javahardener -Dharden=methodcalls -cp … Main`?
-    * oder `jarh -Dharden=methodcalls beispiel.jar`?
+## Academic-project disclaimer (or „this is fun only“)
 
-### Academic-project disclaimer (or „this is fun only“)
+> Since this is a academic project it's focusud on the possibility of
+> byte-code manipulation instead of creating a commercial-prooven software.
+> If you start programming and have to many NullPointerExceptions you may be
+> intressting in this. But the best way to fix such issues is understanding
+> the general problem and improve your code. :-D
+> 
+> But if you think this may interessting for your commercial project feel free
+> to write me a mail.
 
-Since this is a academic project it's focusud on the possibility of
-byte-code manipulation instead of creating a commercial-prooven software.
-If you start programming and have to many NullPointerExceptions you may be
-intressting in this. But the best way to fix such issues is understanding
-the general problem and improve your code. :-)
-
-But if you think this may interessting for your commercial project feel free
-to write me a mail.
-
-### Copyright
+## Copyright
 
 	The MIT License (MIT)
 	
@@ -130,11 +95,10 @@ to write me a mail.
 	IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 	CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-### Links
+## Links
 
 * [Objective-C programming guide](http://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/)
 * [ASM](http://asm.ow2.org/)
 * [ASM 4.0 javadoc](http://asm.ow2.org/asm40/javadoc/user/overview-summary.html)
 * [ASM 4.0 Guide by Eric Bruneton](http://download.forge.objectweb.org/asm/asm4-guide.pdf) (pdf)
-* [ASM Eclipse Plugin](http://asm.ow2.org/eclipse/index.html)
-  * doesn't work our of the box with juno :-(
+* <strike>[ASM Eclipse Plugin](http://asm.ow2.org/eclipse/index.html)</strike> (Doesn't work with the last and current version of Eclipse)
