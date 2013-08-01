@@ -266,13 +266,42 @@ Bytecode-Datenstrom bzw. das manipulierte Bytecode-Ergebnis mithilfe der
 Klasse \texttt{TraceClassVisitor} auch ausgegeben werden.
 
 
-\section{TODO}
+\section{Umsetzung Hauptprogramme}
 
+Auf der Basis der \texttt{CheckNullClassVisitor} Implementierung können
+auch mit den folgenden Hauptprogrammen interagiert werden:
 
 \begin{itemize}
-\item Shell-Script das Class-Dateien bearbeitet.
-\item Ein kleines Shell-Script welches den Classloader setzt (für bestimmte Klassen?
-\item zB \texttt{javahardener -Dharden=methodcalls -cp … Main}?
-\item oder \texttt{jarh -Dharden=methodcalls beispiel.jar}?
+\item So bieten die das Programm \texttt{JHCompile} die Möglichkeit eine Java-Bytecode-Klasse
+zu übersetzen. Die Ausgabe erfolgt auf der Standardausgabe und muss von Hand in eine
+\texttt{.class}-Datei umgeleitet werden.
+
+\item Das Programm \texttt{JHPrint} arbeitet analog zu \texttt{Textifier} und gibt
+den manipulierten Bytecode auf der Standardausgabe in einer Assembler-ählichen
+Schreibweise aus.
+
+\item Und zu guter letzt können Java-Programme mithilfe von \texttt{JHRun} (verwendet
+\texttt{JHClassLoader}) direkt gestartet werden. \texttt{JHRun} benötigt hierfür
+als Parameter jedoch nicht eine \texttt{.class}-Datei sondern einen Klassenname.
+Zusätzliche Parameter werden an die \texttt{main}-Methode der entsprechenden Klasse weitergereicht.
 \end{itemize}
+
+Zur Vereinfachung existiert für jede dieser Klassen ein kleines Shell-Script
+welches den Classpath entsprechend des aktuellen Projektes setzt.
+Für weitere Details sei entsprechend auf diese Verwiesen.
+
+Nach dem kompilieren der Klassen mit der IDE oder Maven sollten die folgenden
+Bespiele entsprechende Ergebnisse liefern:
+
+\vspace{0.3cm}
+
+\texttt{./jhprint target/test-classes/Demo.class}
+
+\vspace{0.3cm}
+
+\texttt{./jhcompile target/test-classes/Demo.class > Demo.class \&\& java -cp . Demo}
+
+\vspace{0.3cm}
+
+\texttt{./jhrun Demo}
 
