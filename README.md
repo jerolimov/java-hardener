@@ -1,8 +1,5 @@
-
 Fachhochschule Köln Campus Gummersbach<br/>
 Fakultät für Informatik und Ingenieurwissenschaften
-
-Christoph Jerolimov, 11084742<br/>2013 Spring Semester
 
 This is a project was developed for the
 [Compiler and Interpreter](http://www.gm.fh-koeln.de/ehses/compiler/)
