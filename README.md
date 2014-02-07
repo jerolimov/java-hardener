@@ -1,32 +1,35 @@
 Fachhochschule Köln Campus Gummersbach<br/>
 Fakultät für Informatik und Ingenieurwissenschaften
 
-This is a project was developed for the
+This was an academic project developed for the
 [Compiler and Interpreter](http://www.gm.fh-koeln.de/ehses/compiler/)
 elective subject provided by
 [Prof.&nbsp;Dr.&nbsp;Ehses](http://www.gm.fh-koeln.de/ehses/).
 
-## About this project
+## The target
 
-The "java-hardener" (all projects need a name, right?) makes java-bytecode
-(more) fault tolerant against `NullPointerExceptions`.
+The "java-hardener" (all projects need a name, right?) should make
+java-bytecode (a little bit more) fault tolerant against `NullPointerExceptions`.
 
 It's inspired by [Objective-C](http://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/) which ignores signals (method calls) to nil-Objects.
 
-**Example:**
+**An example?**
 
-	List nullList = null;
+	List aList = null;
 	
-	System.out.println("List size: " + nullList.size());
-	// Output: "List size: 0"
+	System.out.println("List size: " + aList.size());
+	// No NPE! This line will output: "List size: 0"
 	
-	if (!nullList.isEmpty()) {
-		// Will run this code also if the nullList is null!
-	}
+	if (!aList.isEmpty()) {
+		// No NPE! Will run the code inside the condituion!	}
+
+With this project this code runs without an exception! ✔︎
+
+**How it works?**
 
 It's based on the bytecode manipulation framework [ASM 4](http://asm.ow2.org/).
-You can run the hardening mechanism over your compiled class-files (with a small bytecode to bytecode compiler)
-or integrate it as `ClassLoader` which modifies your code on-the-fly when it was loaded.
+You can run the hardening mechanism over your compiled class-files
+(with a small bytecode to bytecode post-processor) or integrate it as `ClassLoader` which modifies your code on-the-fly when it was loaded.
 
 ## Academic-project disclaimer (or „this is fun only“)
 
