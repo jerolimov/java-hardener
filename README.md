@@ -6,9 +6,10 @@ This is a project was developed for the
 elective subject provided by
 [Prof.&nbsp;Dr.&nbsp;Ehses](http://www.gm.fh-koeln.de/ehses/).
 
-# Java-hardener
+## About this project
 
-Java-hardener makes java-bytecode (a little bit) more fault tolerant against `NullPointerExceptions`.
+The "java-hardener" (all projects need a name, right?) makes java-bytecode
+(more) fault tolerant against `NullPointerExceptions`.
 
 It's inspired by [Objective-C](http://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/) which ignores signals (method calls) to nil-Objects.
 
@@ -27,25 +28,35 @@ It's based on the bytecode manipulation framework [ASM 4](http://asm.ow2.org/).
 You can run the hardening mechanism over your compiled class-files (with a small bytecode to bytecode compiler)
 or integrate it as `ClassLoader` which modifies your code on-the-fly when it was loaded.
 
+## Academic-project disclaimer (or „this is fun only“)
+
+> Since this is a academic project it's focusud on the possibility of
+> byte-code manipulation instead of creating a commercial-prooven software.
+> If you start programming and have to many NullPointerExceptions you may be
+> intressting in this. But the best way to fix such issues is understanding
+> the general problem and improve your code. :-D
+
+Btw: If your opinion this is useful in some situations ... mail me ... :-)
+
 ## Getting started
 
-### Prepare your IDE with Maven
+### Download the dependencies
 
-Dependencies and the IDE configuration files are not part of the git repository.
-To download them use the maven plugin of your IDE or one of these commands:
+Dependencies and configuration files for your IDE are not part of
+the git repository. To download them use the maven plugin of your
+IDE or one of these commands.
 
-Use your IDE maven-plugins to import the projects or configure your project
-with one of these maven 2+ (tested with maven 3.1) commands:
+If your eclipse has no maven plugin you can generate the configuration
+files also with maven itself:
 
 	mvn eclipse:clean eclipse:eclipse -DdownloadSources
-	mvn idea:clean idea:eclipse
 
-Supported maven 2+ (tested with maven 3) commands:
+To compile or package the project from the commandline:
 
 	mvn compile   # download the dependencies and compile the sources
 	mvn package   # compiles, test and package the java-hardener sources
 
-See `pom.xml` for required dependencies (only asm is needed at runtime).
+See `pom.xml` for the dependency list/tree (only asm is needed at runtime).
 
 ### Testing it
 
@@ -67,18 +78,6 @@ You can run this classes also from the commandline with this small wrapper scrip
 	
 	# Run directly with JHClassLoader
 	./jhrun Demo
-
-
-## Academic-project disclaimer (or „this is fun only“)
-
-> Since this is a academic project it's focusud on the possibility of
-> byte-code manipulation instead of creating a commercial-prooven software.
-> If you start programming and have to many NullPointerExceptions you may be
-> intressting in this. But the best way to fix such issues is understanding
-> the general problem and improve your code. :-D
-> 
-> But if you think this may interessting for your commercial project feel free
-> to write me a mail.
 
 ## Copyright
 
@@ -109,4 +108,4 @@ You can run this classes also from the commandline with this small wrapper scrip
 * [ASM](http://asm.ow2.org/)
 * [ASM 4.0 javadoc](http://asm.ow2.org/asm40/javadoc/user/overview-summary.html)
 * [ASM 4.0 Guide by Eric Bruneton](http://download.forge.objectweb.org/asm/asm4-guide.pdf) (pdf)
-* <strike>[ASM Eclipse Plugin](http://asm.ow2.org/eclipse/index.html)</strike> (Doesn't work with the last and current version of Eclipse)
+* <strike>[ASM Eclipse Plugin](http://asm.ow2.org/eclipse/index.html)</strike> (Doesn't work for me with the previous and the current version of Eclipse)
